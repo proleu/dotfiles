@@ -1,44 +1,61 @@
-#!/usr/bin/sh
-SCRIPT=$(realpath "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd $HOME
-# check to see if zsh exists; install if not
-# TODO test with 2nd bracket
-if ! [ -x "$(command -v zsh)" ]; then
-  sudo apt install zsh
-  zsh --version
+#!/usr/bin/env bash
+
+# Define the array of plugins and their GitHub URLs
+declare -A plugins=(
+    # ["fzf"]="https://github.com/junegunn/fzf.git"
+    ["ohmyzsh-full-autoupdate"]="https://github.com/Pilaton/OhMyZsh-full-autoupdate.git"
+    ["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git"
+    ["zsh-completions"]="https://github.com/zsh-users/zsh-completions.git"
+    ["zsh-vi-mode"]="https://github.com/jeffreytse/zsh-vi-mode.git"
+)
+
+# Install fzf if not already installed
+if ! command -v fzf &> /dev/null; then
+    sudo apt install fzf
 fi
-# switch to zsh if not being used
-if ! [[ $SHELL == "/bin/zsh" ]]; then
-  chsh -s /bin/zsh
+
+# Install zsh if not already installed
+if ! command -v zsh &> /dev/null; then
+    sudo apt install zsh
 fi
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-# build symlink to zshrc stored here
-ln -s $HOME/.zshrc $SCRIPTPATH/.zshrc
-# install zsh plugins automatically
-git clone --depth 1 https://github.com/junegunn/fzf.git \
-$HOME/.fzf
-$HOME/.fzf/install
-# TODO add checks for -d
-git clone https://github.com/Pilaton/OhMyZsh-full-autoupdate.git \ 
-  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/ohmyzsh-full-autoupdate
-git clone https://github.com/zsh-users/zsh-autosuggestions.git \
-  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-completions.git \
-  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-completions
-git clone https://github.com/jeffreytse/zsh-vi-mode.git \
-  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-vi-mode
 
-# build symlinks to this repo's dotfiles
+# Set zsh as the default shell
+if [[ $SHELL != "/bin/zsh" ]]; then
+    chsh -s /bin/zsh
+fi
 
-ln -s ./.zshrc ~/.zshrc
-# TODO ...
+# Install Oh My Zsh only if not already installed
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
 
-# install miniconda3 after downloading and verifying it
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-sha256sum Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
+# Create symlink if not already created
+if [[ ! -L "$HOME/.zshrc" ]]; then
+    ln -s "$HOME/.zshrc" "$SCRIPTPATH/.zshrc"
+fi
 
-# source zshrc
-/usr/bin/zsh $HOME/.zshrc
-# check to see if nvim exists; install if not
+# Install zsh plugins from the associative array
+for plugin in "${!plugins[@]}"; do
+    repo_url="${plugins[$plugin]}"
+    plugin_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/$plugin"
+
+    # Clone the plugin only if it doesn't exist
+    if [[ ! -d "$plugin_path" ]]; then
+        git clone "$repo_url" "$plugin_path"
+    fi
+done
+
+# ... Other parts of your script ...
+
+# Install miniconda3 if not already installed
+if ! command -v conda &> /dev/null; then
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O "$HOME/miniconda.sh"
+    bash ~/miniconda.sh -b -p $HOME/miniconda
+    rm "$HOME/miniconda.sh"
+fi
+
+# Source zshrc
+source "$HOME/.zshrc"
+
+# Check if nvim exists; install if not (you may want to add this part)
+
