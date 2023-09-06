@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+
+cd $HOME
 
 # Install fzf if not already installed
 if ! command -v fzf &> /dev/null; then
