@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 # Define the array of plugins and their GitHub URLs
 declare -A plugins=(
     # ["fzf"]="https://github.com/junegunn/fzf.git"
@@ -8,21 +9,6 @@ declare -A plugins=(
     ["zsh-completions"]="https://github.com/zsh-users/zsh-completions.git"
     ["zsh-vi-mode"]="https://github.com/jeffreytse/zsh-vi-mode.git"
 )
-
-# Install fzf if not already installed
-if ! command -v fzf &> /dev/null; then
-    sudo apt install fzf
-fi
-
-# Install zsh if not already installed
-if ! command -v zsh &> /dev/null; then
-    sudo apt install zsh
-fi
-
-# Set zsh as the default shell
-if [[ $SHELL != "/bin/zsh" ]]; then
-    chsh -s /bin/zsh
-fi
 
 # Install Oh My Zsh only if not already installed
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
