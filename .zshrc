@@ -51,4 +51,16 @@ function swap() {
     mv "$2" "$1"
     mv $TMPFILE "$2"
 }
-
+function dockerSummary() {
+  for section in \
+    "Containers:docker ps -a --format 'table {{.ID}}\t{{.Status}}\t{{.Names}}'" \
+    "Images:docker images --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}'" \
+    "Volumes:docker volume ls --format 'table {{.Driver}}\t{{.Name}}'" \
+    "Networks:docker network ls --format 'table {{.Driver}}\t{{.Name}}'" \
+    "Disk Usage:docker system df"
+  do
+    title="${section%%:*}"
+    cmd="${section#*:}"
+    echo -e "$title\n$($cmd | cut -c1-80)"
+  done
+}
