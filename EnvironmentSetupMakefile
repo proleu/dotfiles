@@ -1,25 +1,42 @@
-all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn 
+all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
-                wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; \
-                bash miniconda.sh -b -p $$HOME/miniconda3; \
-                rm miniconda.sh; \
-        else \
-                echo "Miniconda3 is already installed."; \
-        fi
+	        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; \
+	        bash miniconda.sh -b -p $$HOME/miniconda3; \
+	        rm miniconda.sh; \
+	else \
+	        echo "Miniconda3 is already installed."; \
+	fi
 
 install_nvim:
-	sudo apt update && sudo apt install -y neovim
+	if ! command -v nvim &> /dev/null; then \
+	        sudo apt update && sudo apt install -y neovim; \
+	else \
+	        echo "Neovim is already installed."; \
+	fi
 
 install_vscode:
-	sudo apt update && sudo apt install -y software-properties-common apt-transport-https wget
-	wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
-	sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
-	sudo apt update && sudo apt install -y code
+	if ! command -v code &> /dev/null; then \
+	        sudo apt update && sudo apt install -y software-properties-common apt-transport-https wget; \
+	        wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -; \
+	        sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"; \
+	        sudo apt update && sudo apt install -y code; \
+	else \
+	        echo "VS Code is already installed."; \
+	fi
 
 install_tmux:
-	sudo apt update && sudo apt install -y tmux
+	if ! command -v tmux &> /dev/null; then \
+	        sudo apt update && sudo apt install -y tmux; \
+	else \
+	        echo "tmux is already installed."; \
+	fi
 
 install_openvpn:
-	sudo apt update && sudo apt install -y openvpn
+	if ! command -v openvpn &> /dev/null; then \
+	        sudo apt update && sudo apt install -y openvpn; \
+	else \
+	        echo "OpenVPN is already installed."; \
+	fi
+
