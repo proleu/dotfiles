@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn
 
 install_miniconda3:
