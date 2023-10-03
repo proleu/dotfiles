@@ -1,3 +1,13 @@
+# Somewhat unsafely check for .bashrc and collect any PATH mods from it
+if [ -f "$HOME/.bashrc" ]; then
+    grep 'export PATH=' "$HOME/.bashrc" | while read -r line; do
+        case "$line" in
+            export\ PATH=*) eval "$line" ;;
+            *) ;;
+        esac
+    done
+fi
+
 # History
 setopt histignorealldups sharehistory
 HISTSIZE=SAVEHIST=10000
