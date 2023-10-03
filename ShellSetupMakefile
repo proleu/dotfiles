@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 all: zshrc_update install_oh_my_zsh install_plugins
 
 zshrc_update:
