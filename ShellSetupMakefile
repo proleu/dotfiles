@@ -7,7 +7,7 @@ zshrc_update:
 
 install_oh_my_zsh:
 	if [ ! -d "$$HOME/.oh-my-zsh" ]; then \
-	        sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"; \
+	        sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc; \
 	        echo "Type 'exit' to continue installation script."; \
 	else \
 	        echo "Oh My Zsh is already installed."; \

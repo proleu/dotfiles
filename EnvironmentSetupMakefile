@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn
+all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn install_fzf
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
@@ -41,3 +41,9 @@ install_openvpn:
 	        echo "OpenVPN is already installed."; \
 	fi
 
+install_fzf:
+        if ! command -v fzf > /dev/null 2>&1; then \
+                sudo apt update && sudo apt install -y fzf; \
+        else \
+                echo "fzf is already installed."; \
+        fi
