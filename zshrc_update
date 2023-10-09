@@ -48,6 +48,7 @@ alias bbbbbb="cd ../../../../../.."
 alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
 alias vi="nvim"
+alias vim="nvim"
 
 # Functions
 function count_pdbs() { find -type f -name "*.pdb*" | wc -l; }
