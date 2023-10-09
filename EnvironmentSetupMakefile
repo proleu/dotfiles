@@ -26,7 +26,7 @@ install_nvim:
 
 update_nvim:
 	mkdir -p "$$HOME/.config/nvim"
-	[ -f "$HOME/.config/nvim/init.vim" ] && cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"
+	[ -f "$$$HOME/.config/nvim/init.vim" ] && cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"
 	cp init.vim "$$HOME/.config/nvim/init.vim"
 	nvim -c "PlugUpdate" -c "qa"
 

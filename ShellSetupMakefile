@@ -2,7 +2,7 @@ SHELL := /bin/bash
 all: update_zshrc install_oh_my_zsh install_plugins
 
 update_zshrc:
-	[ -f "$HOME/.zshrc" ] && cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"
+	[ -f "$$$HOME/.zshrc" ] && cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"
 	cp zshrc_update "$$HOME/.zshrc"
 
 install_oh_my_zsh:
