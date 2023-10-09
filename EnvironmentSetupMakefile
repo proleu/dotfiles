@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf
+all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_nf
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
@@ -57,6 +57,15 @@ install_openvpn:
 install_fzf:
 	if ! command -v fzf > /dev/null 2>&1; then \
 			sudo apt update && sudo apt install -y fzf; \
+	else \
+			echo "fzf is already installed."; \
+	fi
+
+install_nf:
+	if ! command -v nextflow > /dev/null 2>&1; then \
+			curl -s https://get.nextflow.io | bash; \
+			chmod +x nextflow; \
+			mv nextflow /usr/bin/nextflow; \
 	else \
 			echo "fzf is already installed."; \
 	fi
