@@ -47,7 +47,6 @@ call plug#begin('~/.vim/plugged')
  Plug 'scrooloose/nerdtree'
  Plug 'tpope/vim-commentary'
  Plug 'tpope/vim-surround'
- Plug 'ryanoasis/vim-devicons'
 call plug#end()
 
 " automatically color stuff
@@ -61,4 +60,4 @@ if has("autocmd")
   au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 endif
-autocmd VimEnter * NERDTree
+autocmd VimEnter * NERDTree | wincmd p
