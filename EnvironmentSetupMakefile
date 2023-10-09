@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_nf install_unzip install_tf
+all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
@@ -60,6 +60,14 @@ install_fzf:
 	else \
 			echo "fzf is already installed."; \
 	fi
+
+install_java:
+	if ! command -v java &> /dev/null; then \
+			sudo apt update && sudo apt install -y openjdk-11-jdk; \
+	else \
+			echo "Java is already installed."; \
+	fi
+
 
 install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
