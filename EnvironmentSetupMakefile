@@ -12,9 +12,12 @@ install_miniconda3:
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
-	        sudo apt update && sudo apt install -y nodejs; \
+		wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz; \
+		tar -xf node-v18.18.0-linux-x64.tar.xz; \
+		sudo cp node-v18.18.0-linux-x64/bin/* /usr/bin/; \
+		rm -rf node-v18.18.0-linux-x64 node-v18.18.0-linux-x64.tar.xz; \
 	else \
-	        echo "nodejs is already installed."; \
+		echo "Node.js is already installed."; \
 	fi
 
 install_nvim:
