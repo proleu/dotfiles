@@ -26,7 +26,11 @@ install_nvim:
 
 update_nvim:
 	mkdir -p "$$HOME/.config/nvim"
-	[ -f "$$$HOME/.config/nvim/init.vim" ] && cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"
+	if [ -f "$$HOME/.config/nvim/init.vim" ]; then \
+		cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"; \
+	else \
+		echo "No existing init.vim file found."; \
+	fi ; \
 	cp init.vim "$$HOME/.config/nvim/init.vim"
 	nvim -c "PlugUpdate" -c "qa"
 

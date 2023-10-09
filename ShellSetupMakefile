@@ -2,7 +2,11 @@ SHELL := /bin/bash
 all: update_zshrc install_oh_my_zsh install_plugins
 
 update_zshrc:
-	[ -f "$$$HOME/.zshrc" ] && cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"
+	if [ -f "$$HOME/.zshrc" ]; then \
+		cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"; \
+	else \
+		echo "No existing .zshrc file found."; \
+	fi; \
 	cp zshrc_update "$$HOME/.zshrc"
 
 install_oh_my_zsh:
