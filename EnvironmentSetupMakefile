@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: install_miniconda3 install_nvim install_vscode install_tmux install_openvpn install_fzf
+all: install_miniconda3 install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
@@ -16,6 +16,12 @@ install_nvim:
 	else \
 	        echo "Neovim is already installed."; \
 	fi
+
+update_nvim:
+	mkdir -p "$$HOME/.config/nvim"
+	cat "$$HOME/.config/nvim/init.vim" > "$$HOME/config/nvim/init.vim.bak"
+	cp init.vim "$$HOME/.config/nvim/init.vim"
+	nvim -c "PlugUpdate" -c "qa"
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
@@ -42,8 +48,8 @@ install_openvpn:
 	fi
 
 install_fzf:
-        if ! command -v fzf > /dev/null 2>&1; then \
-                sudo apt update && sudo apt install -y fzf; \
-        else \
-                echo "fzf is already installed."; \
-        fi
+	if ! command -v fzf > /dev/null 2>&1; then \
+			sudo apt update && sudo apt install -y fzf; \
+	else \
+			echo "fzf is already installed."; \
+	fi
