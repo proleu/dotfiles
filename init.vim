@@ -62,3 +62,4 @@ if has("autocmd")
     \| exe "normal! g'\"" | endif
 endif
 autocmd VimEnter * NERDTree | wincmd p
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
