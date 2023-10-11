@@ -43,6 +43,7 @@ endif
 call plug#begin('~/.vim/plugged')
  Plug 'dracula/vim' " theme
  Plug 'github/copilot.vim' " Copilot
+ Plug 'LukeGoodsell/nextflow-vim'
  Plug 'mhinz/vim-startify'
  Plug 'scrooloose/nerdtree'
  Plug 'tpope/vim-commentary'
