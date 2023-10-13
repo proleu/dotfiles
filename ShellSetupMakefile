@@ -20,6 +20,7 @@ install_oh_my_zsh:
 install_plugins:
 	declare -A plugins=( \
 	        ["ohmyzsh-full-autoupdate"]="https://github.com/Pilaton/OhMyZsh-full-autoupdate.git" \
+			["thefuck"]="https://github.com/nvbn/thefuck.git" \
 	        ["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git" \
 	        ["zsh-completions"]="https://github.com/zsh-users/zsh-completions.git" \
 	        ["zsh-vi-mode"]="https://github.com/jeffreytse/zsh-vi-mode.git" \
