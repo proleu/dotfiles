@@ -38,9 +38,6 @@ source $ZSH/oh-my-zsh.sh
 # User Configuration
 export EDITOR='nvim'
 bindkey -v
-if ! command -v conda &> /dev/null; then
-    source activate base
-fi
 
 # Aliases
 alias b="cd .."
