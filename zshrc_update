@@ -26,7 +26,6 @@ plugins=(
     git 
     history-substring-search 
     ohmyzsh-full-autoupdate 
-    thefuck
     zsh-autosuggestions 
     zsh-completions 
     zsh-vi-mode
