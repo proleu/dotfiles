@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Check if 'make' is installed, if not, install it
+# Check if 'make' and 'zsh' are installed, if not, install them
+packages_to_install=()
 if ! command -v make &> /dev/null; then
-  echo "'make' is not installed. Installing now..."
-  sudo apt update && sudo apt install -y make
+  packages_to_install+=("make")
 fi
 
-# Check if Zsh is installed, if not, install it
 if ! command -v zsh &> /dev/null; then
-  echo "Zsh is not installed. Installing now..."
-  sudo apt update && sudo apt install -y zsh
+  packages_to_install+=("zsh")
+fi
+
+if [ ${#packages_to_install[@]} -gt 0 ]; then
+  echo "Installing required packages: ${packages_to_install[@]}"
+  sudo apt update && sudo apt install -y "${packages_to_install[@]}"
 fi
 
 # Attempt to change the shell to Zsh
@@ -25,3 +28,4 @@ read -n 1 -s
 # Run the Makefiles
 make -f ShellSetupMakefile
 make -f EnvironmentSetupMakefile
+
