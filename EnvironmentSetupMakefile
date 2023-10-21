@@ -3,12 +3,12 @@ all: install_miniforge install_mamba make_work_env install_nodejs install_nvim u
 
 install_miniforge:
 	if ! command -v conda &> /dev/null; then \
-		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh" \
-		bash Miniforge3.sh -b -p "${HOME}/conda" \
+		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
+		bash Miniforge3.sh -b -p "${HOME}/conda"; \
 		rm Miniforge3.sh; \
-		source "${HOME}/conda/etc/profile.d/conda.sh" \
-		source "${HOME}/conda/etc/profile.d/mamba.sh" \
-		conda activate \
+		source "${HOME}/conda/etc/profile.d/conda.sh"; \
+		source "${HOME}/conda/etc/profile.d/mamba.sh"; \
+		conda activate; \
 	else \
 		echo "Miniforge is already installed."; \
 	fi
@@ -54,7 +54,7 @@ update_nvim:
 		cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"; \
 	else \
 		echo "No existing init.vim file found."; \
-	fi ; \
+	fi \
 	cp init.vim "$$HOME/.config/nvim/init.vim"
 	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
