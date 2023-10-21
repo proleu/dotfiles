@@ -1,26 +1,27 @@
 SHELL := /bin/bash
 all: install_miniforge install_mamba make_work_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
 
-install_miniforge:
-	if ! command -v conda &> /dev/null; then \
-		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-		bash Miniforge3.sh -b -p "${HOME}/conda"; \
-		rm Miniforge3.sh; \
-		source "${HOME}/conda/etc/profile.d/conda.sh"; \
-		source "${HOME}/conda/etc/profile.d/mamba.sh"; \
-		conda activate; \
-	else \
-		echo "Miniforge is already installed."; \
-	fi
+CONDA_PATH := $(shell command -v conda 2>/dev/null)
 
-install_mamba:
+install_miniforge:
+	if [ -z "$(CONDA_PATH)" ]; then \
+        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
+        bash Miniforge3.sh -b -p "${HOME}/conda"; \
+        rm Miniforge3.sh; \
+        source "${HOME}/conda/etc/profile.d/conda.sh"; \
+        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
+        conda activate; \
+        export CONDA_PATH="${HOME}/conda/bin/conda"; \
+    fi 
+
+install_mamba: install_miniforge
 	if ! command -v mamba &> /dev/null; then \
-		conda install -y mamba -c conda-forge; \
+		${CONDA_PATH}/conda install -y mamba -c conda-forge; \
 	else \
 		echo "mamba is already installed."; \
 	fi
 
-make_work_env:
+make_work_env: install_mamba
 	# check if conda environment already exists
 	if ! conda env list | grep -q "work"; then \
 		echo "Creating conda environment 'work'"; \
@@ -41,14 +42,14 @@ install_nodejs:
 		echo "Node.js is already installed."; \
 	fi
 
-install_nvim:
+install_nvim: install_nodejs
 	if ! command -v nvim &> /dev/null; then \
 			sudo apt update && sudo apt install -y neovim; \
 	else \
 			echo "Neovim is already installed."; \
 	fi
 
-update_nvim:
+update_nvim: install_nvim
 	mkdir -p "$$HOME/.config/nvim"
 	if [ -f "$$HOME/.config/nvim/init.vim" ]; then \
 		cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"; \
@@ -98,7 +99,7 @@ install_java:
 	fi
 
 
-install_nf:
+install_nf: install_java
 	if ! command -v nextflow > /dev/null 2>&1; then \
 		curl -s https://get.nextflow.io | bash; \
 		chmod +x nextflow; \
@@ -114,7 +115,7 @@ install_unzip:
 		echo "unzip is already installed."; \
 	fi
 
-install_tf:
+install_tf: install_unzip
 	if ! command -v terraform > /dev/null 2>&1; then \
 		wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
 			unzip terraform_1.6.0_linux_amd64.zip; \
