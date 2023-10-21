@@ -2,6 +2,7 @@ SHELL := /bin/bash
 all: install_miniforge install_mamba make_work_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
 
 CONDA_PATH := $(shell command -v conda 2>/dev/null)
+MAMBA_PATH := $(shell command -v mamba 2>/dev/null)
 
 install_miniforge:
 	if [ -z "$(CONDA_PATH)" ]; then \
@@ -12,11 +13,12 @@ install_miniforge:
         source "${HOME}/conda/etc/profile.d/mamba.sh"; \
         conda activate; \
         export CONDA_PATH="${HOME}/conda/bin/conda"; \
+	export MAMBA_PATH="${HOME}/conda/bin/mamba"; \
     fi 
 
 install_mamba: install_miniforge
-	if ! command -v mamba &> /dev/null; then \
-		${CONDA_PATH}/conda install -y mamba -c conda-forge; \
+	if [ -z "$(MAMBA_PATH)" ]; then \
+		$(CONDA_PATH) install -y mamba -c conda-forge; \
 	else \
 		echo "mamba is already installed."; \
 	fi
@@ -25,7 +27,7 @@ make_work_env: install_mamba
 	# check if conda environment already exists
 	if ! conda env list | grep -q "work"; then \
 		echo "Creating conda environment 'work'"; \
-		mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
+		$(MAMBA_PATH) create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
 		echo "source activate work" >> ~/.zshrc; \
 	else \
 		echo "Conda environment 'work' already exists."; \
@@ -43,9 +45,9 @@ install_nodejs:
 
 install_nvim: install_nodejs
 	if ! command -v nvim &> /dev/null; then \
-			sudo apt update && sudo apt install -y neovim; \
+		sudo apt update && sudo apt install -y neovim; \
 	else \
-			echo "Neovim is already installed."; \
+		echo "Neovim is already installed."; \
 	fi
 
 update_nvim: install_nvim
