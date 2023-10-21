@@ -1,20 +1,33 @@
 SHELL := /bin/bash
-all: install_miniforge install_mamba make_work_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
+all: install_mamba_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
 
 CONDA_PATH := $(shell command -v conda 2>/dev/null)
 MAMBA_PATH := $(shell command -v mamba 2>/dev/null)
 
-install_miniforge:
+install_mamba_env:
 	if [ -z "$(CONDA_PATH)" ]; then \
-        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-        bash Miniforge3.sh -b -p "${HOME}/conda"; \
-        rm Miniforge3.sh; \
-        source "${HOME}/conda/etc/profile.d/conda.sh"; \
-        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
-        conda activate; \
-        export CONDA_PATH="${HOME}/conda/bin/conda"; \
-	export MAMBA_PATH="${HOME}/conda/bin/mamba"; \
-    fi 
+        	wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
+        	bash Miniforge3.sh -b -p "${HOME}/conda"; \
+        	rm Miniforge3.sh; \
+        	source "${HOME}/conda/etc/profile.d/conda.sh"; \
+        	source "${HOME}/conda/etc/profile.d/mamba.sh"; \
+        	conda activate; \
+        	export CONDA_PATH="${HOME}/conda/bin/conda"; \
+		export MAMBA_PATH="${HOME}/conda/bin/mamba"; \
+		echo "Creating conda environment 'work'"; \
+		$(MAMBA_PATH) create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
+		echo "source activate work" >> ~/.zshrc; \
+	else \ # conda exists, check if mamba exists
+		if ! command -v mamba &> /dev/null; then \
+			$(CONDA_PATH) install -y mamba -c conda-forge; \
+			mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
+			echo "source activate work" >> ~/.zshrc; \
+		else \ # mamba exists, check if env exists
+			if ! conda env list | grep -q "work"; then \
+				mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
+				echo "source activate work" >> ~/.zshrc; \
+	fi
+	echo "source activate work" >> ~/.zshrc
 
 install_mamba: install_miniforge
 	if [ -z "$(MAMBA_PATH)" ]; then \
