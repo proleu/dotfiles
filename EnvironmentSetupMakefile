@@ -25,8 +25,7 @@ make_work_env: install_mamba
 	# check if conda environment already exists
 	if ! conda env list | grep -q "work"; then \
 		echo "Creating conda environment 'work'"; \
-		mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge; \
-		# add activating the env to .zshrc
+		mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
 		echo "source activate work" >> ~/.zshrc; \
 	else \
 		echo "Conda environment 'work' already exists."; \
@@ -50,15 +49,15 @@ install_nvim: install_nodejs
 	fi
 
 update_nvim: install_nvim
-	mkdir -p "$$HOME/.config/nvim"
-	if [ -f "$$HOME/.config/nvim/init.vim" ]; then \
-		cat "$$HOME/.config/nvim/init.vim" > "$$HOME/.config/nvim/init.vim.bak"; \
+	mkdir -p "${HOME}/.config/nvim"
+	if [ -f "${HOME}/.config/nvim/init.vim" ]; then \
+		cat "${HOME}/.config/nvim/init.vim" > "${HOME}/.config/nvim/init.vim.bak"; \
 	else \
 		echo "No existing init.vim file found."; \
 	fi \
-	cp init.vim "$$HOME/.config/nvim/init.vim"
-	nvim -c "PlugInstall" -c "qa"
-	nvim -c "PlugUpdate" -c "qa"
+	cp init.vim "${HOME}/.config/nvim/init.vim" ; \
+	nvim -c "PlugInstall" -c "qa" \
+	nvim -c "PlugUpdate" -c "qa" \
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
