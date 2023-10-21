@@ -3,10 +3,12 @@ all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode i
 
 install_miniconda3:
 	if ! command -v conda &> /dev/null; then \
-	        wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh; \
-	        bash miniconda.sh -b -p $$HOME/miniconda3; \
-	        rm miniconda.sh; \
-			$$HOME/miniconda3/bin/conda init zsh; \
+	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
+	        bash Miniforge3.sh -b -p "${HOME}/conda" \
+	        rm Miniforge3.sh; \
+			source "${HOME}/conda/etc/profile.d/conda.sh" \
+			source "${HOME}/conda/etc/profile.d/mamba.sh" \
+			conda activate \
 	else \
 	        echo "Miniconda3 is already installed."; \
 	fi
