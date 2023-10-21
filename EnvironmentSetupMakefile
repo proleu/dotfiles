@@ -1,7 +1,7 @@
 SHELL := /bin/bash
-all: install_miniconda3 install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
+all: install_miniforge install_mamba make_work_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf
 
-install_miniconda3:
+install_miniforge:
 	if ! command -v conda &> /dev/null; then \
 	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
 	        bash Miniforge3.sh -b -p "${HOME}/conda" \
@@ -10,7 +10,25 @@ install_miniconda3:
 			source "${HOME}/conda/etc/profile.d/mamba.sh" \
 			conda activate \
 	else \
-	        echo "Miniconda3 is already installed."; \
+	        echo "Miniforge is already installed."; \
+	fi
+
+install_mamba:
+	if ! command -v mamba &> /dev/null; then \
+			conda install -y mamba -c conda-forge; \
+	else \
+			echo "mamba is already installed."; \
+	fi
+
+make_work_env:
+	# check if conda environment already exists
+	if ! conda env list | grep -q "work"; then \
+		echo "Creating conda environment 'work'"; \
+		mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge; \
+		# add activating the env to .zshrc
+	    echo "source activate work" >> ~/.zshrc; \
+	else \
+		echo "Conda environment 'work' already exists."; \
 	fi
 
 install_nodejs:
