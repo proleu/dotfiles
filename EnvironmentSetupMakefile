@@ -3,7 +3,7 @@ all: install_miniforge install_mamba make_work_env install_nodejs install_nvim u
 
 install_miniforge:
 	if ! command -v conda &> /dev/null; then \
-		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
+		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh" \
 		bash Miniforge3.sh -b -p "${HOME}/conda" \
 		rm Miniforge3.sh; \
 		source "${HOME}/conda/etc/profile.d/conda.sh" \
@@ -115,11 +115,11 @@ install_unzip:
 	fi
 
 install_tf:
-if ! command -v terraform > /dev/null 2>&1; then \
-	wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
-		unzip terraform_1.6.0_linux_amd64.zip; \
-		sudo mv terraform /usr/local/bin/; \
-		rm terraform_1.6.0_linux_amd64.zip; \
-	else \
-		echo "terraform is already installed."; \
-	fi
+	if ! command -v terraform > /dev/null 2>&1; then \
+		wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
+			unzip terraform_1.6.0_linux_amd64.zip; \
+			sudo mv terraform /usr/local/bin/; \
+			rm terraform_1.6.0_linux_amd64.zip; \
+		else \
+			echo "terraform is already installed."; \
+		fi
