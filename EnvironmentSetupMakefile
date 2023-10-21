@@ -3,21 +3,21 @@ all: install_miniforge install_mamba make_work_env install_nodejs install_nvim u
 
 install_miniforge:
 	if ! command -v conda &> /dev/null; then \
-	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
-	        bash Miniforge3.sh -b -p "${HOME}/conda" \
-	        rm Miniforge3.sh; \
-			source "${HOME}/conda/etc/profile.d/conda.sh" \
-			source "${HOME}/conda/etc/profile.d/mamba.sh" \
-			conda activate \
+		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" \
+		bash Miniforge3.sh -b -p "${HOME}/conda" \
+		rm Miniforge3.sh; \
+		source "${HOME}/conda/etc/profile.d/conda.sh" \
+		source "${HOME}/conda/etc/profile.d/mamba.sh" \
+		conda activate \
 	else \
-	        echo "Miniforge is already installed."; \
+		echo "Miniforge is already installed."; \
 	fi
 
 install_mamba:
 	if ! command -v mamba &> /dev/null; then \
-			conda install -y mamba -c conda-forge; \
+		conda install -y mamba -c conda-forge; \
 	else \
-			echo "mamba is already installed."; \
+		echo "mamba is already installed."; \
 	fi
 
 make_work_env:
@@ -26,7 +26,7 @@ make_work_env:
 		echo "Creating conda environment 'work'"; \
 		mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge; \
 		# add activating the env to .zshrc
-	    echo "source activate work" >> ~/.zshrc; \
+		echo "source activate work" >> ~/.zshrc; \
 	else \
 		echo "Conda environment 'work' already exists."; \
 	fi
@@ -43,9 +43,9 @@ install_nodejs:
 
 install_nvim:
 	if ! command -v nvim &> /dev/null; then \
-	        sudo apt update && sudo apt install -y neovim; \
+			sudo apt update && sudo apt install -y neovim; \
 	else \
-	        echo "Neovim is already installed."; \
+			echo "Neovim is already installed."; \
 	fi
 
 update_nvim:
@@ -56,69 +56,70 @@ update_nvim:
 		echo "No existing init.vim file found."; \
 	fi ; \
 	cp init.vim "$$HOME/.config/nvim/init.vim"
+	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
-	        sudo apt update && sudo apt install -y software-properties-common apt-transport-https wget; \
-	        wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -; \
-	        sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"; \
-	        sudo apt update && sudo apt install -y code; \
+		sudo apt update && sudo apt install -y software-properties-common apt-transport-https wget; \
+		wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -; \
+		sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"; \
+		sudo apt update && sudo apt install -y code; \
 	else \
-	        echo "VS Code is already installed."; \
+		echo "VS Code is already installed."; \
 	fi
 
 install_tmux:
 	if ! command -v tmux &> /dev/null; then \
-	        sudo apt update && sudo apt install -y tmux; \
+		sudo apt update && sudo apt install -y tmux; \
 	else \
-	        echo "tmux is already installed."; \
+		echo "tmux is already installed."; \
 	fi
 
 install_openvpn:
 	if ! command -v openvpn &> /dev/null; then \
-	        sudo apt update && sudo apt install -y openvpn; \
+		sudo apt update && sudo apt install -y openvpn; \
 	else \
-	        echo "OpenVPN is already installed."; \
+		echo "OpenVPN is already installed."; \
 	fi
 
 install_fzf:
 	if ! command -v fzf > /dev/null 2>&1; then \
-			sudo apt update && sudo apt install -y fzf; \
+		sudo apt update && sudo apt install -y fzf; \
 	else \
-			echo "fzf is already installed."; \
+		echo "fzf is already installed."; \
 	fi
 
 install_java:
 	if ! command -v java &> /dev/null; then \
-			sudo apt update && sudo apt install -y openjdk-11-jdk; \
+		sudo apt update && sudo apt install -y openjdk-11-jdk; \
 	else \
-			echo "Java is already installed."; \
+		echo "Java is already installed."; \
 	fi
 
 
 install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
-			curl -s https://get.nextflow.io | bash; \
-			chmod +x nextflow; \
-			sudo mv nextflow /usr/bin/nextflow; \
+		curl -s https://get.nextflow.io | bash; \
+		chmod +x nextflow; \
+		sudo mv nextflow /usr/bin/nextflow; \
 	else \
-			echo "nextflow is already installed."; \
+		echo "nextflow is already installed."; \
 	fi
 
 install_unzip:
 	if ! command -v unzip > /dev/null 2>&1; then \
-			sudo apt update && sudo apt install -y unzip; \
+		sudo apt update && sudo apt install -y unzip; \
 	else \
-			echo "unzip is already installed."; \
+		echo "unzip is already installed."; \
 	fi
 
 install_tf:
-	if ! command -v terraform > /dev/null 2>&1; then \
-			wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
-			unzip terraform_1.6.0_linux_amd64.zip; \
-			sudo mv terraform /usr/local/bin/; \
-			rm terraform_1.6.0_linux_amd64.zip; \
+if ! command -v terraform > /dev/null 2>&1; then \
+	wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
+		unzip terraform_1.6.0_linux_amd64.zip; \
+		sudo mv terraform /usr/local/bin/; \
+		rm terraform_1.6.0_linux_amd64.zip; \
 	else \
-			echo "terraform is already installed."; \
+		echo "terraform is already installed."; \
 	fi

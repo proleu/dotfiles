@@ -11,26 +11,26 @@ update_zshrc:
 
 install_oh_my_zsh:
 	if [ ! -d "$$HOME/.oh-my-zsh" ]; then \
-	        sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc; \
-	        echo "Type 'exit' to continue installation script."; \
+		sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc; \
+		echo "Type 'exit' to continue installation script."; \
 	else \
-	        echo "Oh My Zsh is already installed."; \
+		echo "Oh My Zsh is already installed."; \
 	fi
 
 install_plugins:
 	declare -A plugins=( \
-	        ["ohmyzsh-full-autoupdate"]="https://github.com/Pilaton/OhMyZsh-full-autoupdate.git" \
-	        ["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git" \
-	        ["zsh-completions"]="https://github.com/zsh-users/zsh-completions.git" \
-	        ["zsh-vi-mode"]="https://github.com/jeffreytse/zsh-vi-mode.git" \
+		["ohmyzsh-full-autoupdate"]="https://github.com/Pilaton/OhMyZsh-full-autoupdate.git" \
+		["zsh-autosuggestions"]="https://github.com/zsh-users/zsh-autosuggestions.git" \
+		["zsh-completions"]="https://github.com/zsh-users/zsh-completions.git" \
+		["zsh-vi-mode"]="https://github.com/jeffreytse/zsh-vi-mode.git" \
 	); \
 	for plugin in "$${!plugins[@]}"; do \
-	        plugin_url="$${plugins[$$plugin]}"; \
-	        plugin_dir="$$HOME/.oh-my-zsh/custom/plugins/$$plugin"; \
-	        if [ ! -d "$$plugin_dir" ]; then \
-	                git clone "$$plugin_url" "$$plugin_dir"; \
-	        else \
-	                echo "Plugin $$plugin is already installed."; \
-	        fi; \
+		plugin_url="$${plugins[$$plugin]}"; \
+		plugin_dir="$$HOME/.oh-my-zsh/custom/plugins/$$plugin"; \
+		if [ ! -d "$$plugin_dir" ]; then \
+				git clone "$$plugin_url" "$$plugin_dir"; \
+		else \
+				echo "Plugin $$plugin is already installed."; \
+		fi; \
 	done
 
