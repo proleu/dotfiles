@@ -57,8 +57,8 @@ update_nvim: install_nvim
 install_vscode:
 	if ! command -v code &> /dev/null; then \
 		sudo apt update && sudo apt install -y software-properties-common apt-transport-https wget; \
-		wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -; \
-		sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"; \
+		wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | gpg --dearmor -o /usr/share/keyrings/vscode-archive-keyring.gpg; \
+		echo "deb [signed-by=/usr/share/keyrings/vscode-archive-keyring.gpg arch=amd64] https://packages.microsoft.com/repos/vscode stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null; \
 		sudo apt update && sudo apt install -y code; \
 	else \
 		echo "VS Code is already installed."; \
