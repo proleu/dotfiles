@@ -12,16 +12,13 @@ install_mamba_env:
 	        echo "Creating conda environment 'work'"; \
 	        /home/proleu/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
 	        /home/proleu/conda/bin/conda init zsh; \
-	        echo "source activate work" >> "/home/proleu/.zshrc" ; \
 	else \
 	        if ! command -v mamba &> /dev/null; then \
 	                conda install -y mamba -c conda-forge; \
 	                mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	                echo "source activate work" >> "/home/proleu/.zshrc" ; \
 	        else \
 	                if ! conda env list | grep -q "work"; then \
 	                        mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	                        echo "source activate work" >> "/home/proleu/.zshrc" ; \
 	                fi; \
 	        fi; \
 	fi

@@ -76,3 +76,8 @@ function dockerSummary() {
     echo -e "$title\n$($cmd | cut -c1-80)"
   done
 }
+
+# Conda 
+if [ -d "${HOME}/conda/envs/work" ]; then
+    source activate work
+fi
