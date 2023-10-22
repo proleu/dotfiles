@@ -44,15 +44,15 @@ install_nvim: install_nodejs
 	fi
 
 update_nvim: install_nvim
-	mkdir -p "${HOME}/.config/nvim"
-	if [ -f "${HOME}/.config/nvim/init.vim" ]; then \
-		cat "${HOME}/.config/nvim/init.vim" > "${HOME}/.config/nvim/init.vim.bak"; \
+	mkdir -p "/home/proleu/.config/nvim"
+	if [ -f "/home/proleu/.config/nvim/init.vim" ]; then \
+		cat "/home/proleu/.config/nvim/init.vim" > "/home/proleu/.config/nvim/init.vim.bak"; \
 	else \
 		echo "No existing init.vim file found."; \
-	fi \
-	cp init.vim "${HOME}/.config/nvim/init.vim" ; \
-	nvim -c "PlugInstall" -c "qa" \
-	nvim -c "PlugUpdate" -c "qa" \
+	fi
+	cp init.vim "/home/proleu/.config/nvim/init.vim"
+	nvim -c "PlugInstall" -c "qa"
+	nvim -c "PlugUpdate" -c "qa"
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
