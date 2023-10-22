@@ -3,44 +3,27 @@ all: install_mamba_env install_nodejs install_nvim update_nvim install_vscode in
 
 install_mamba_env:
 	if ! command -v conda &> /dev/null; then \
-		wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-		bash Miniforge3.sh -b -p "${HOME}/conda"; \
-		rm Miniforge3.sh; \
-		source "${HOME}/conda/etc/profile.d/conda.sh"; \
-		source "${HOME}/conda/etc/profile.d/mamba.sh"; \
-		conda activate; \
-		echo "Creating conda environment 'work'"; \
-		${HOME}/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-		${HOME}/conda/bin/conda init zsh; \
-		$(CONDA_PATH) init zsh; \
-		echo "source activate work" >> ~/.zshrc; \
+	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
+	        bash Miniforge3.sh -b -p "/home/proleu/conda"; \
+	        rm Miniforge3.sh; \
+	        source "/home/proleu/conda/etc/profile.d/conda.sh"; \
+	        source "/home/proleu/conda/etc/profile.d/mamba.sh"; \
+	        conda activate; \
+	        echo "Creating conda environment 'work'"; \
+	        /home/proleu/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
+	        /home/proleu/conda/bin/conda init zsh; \
+	        echo "source activate work" >> "/home/proleu/.zshrc" ; \
 	else \
-		if ! command -v mamba &> /dev/null; then \
-			conda install -y mamba -c conda-forge; \
-			mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-			echo "source activate work" >> ~/.zshrc; \
-		else \
-			if ! conda env list | grep -q "work"; then \
-				mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-				echo "source activate work" >> ~/.zshrc; \
-			fi; \
-		fi; \
-    fi
-install_mamba: install_miniforge
-	if [ -z "$(MAMBA_PATH)" ]; then \
-		$(CONDA_PATH) install -y mamba -c conda-forge; \
-	else \
-		echo "mamba is already installed."; \
-	fi
-
-make_work_env: install_mamba
-	# check if conda environment already exists
-	if ! conda env list | grep -q "work"; then \
-		echo "Creating conda environment 'work'"; \
-		$(MAMBA_PATH) create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y ; \
-		echo "source activate work" >> ~/.zshrc; \
-	else \
-		echo "Conda environment 'work' already exists."; \
+	        if ! command -v mamba &> /dev/null; then \
+	                conda install -y mamba -c conda-forge; \
+	                mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
+	                echo "source activate work" >> "/home/proleu/.zshrc" ; \
+	        else \
+	                if ! conda env list | grep -q "work"; then \
+	                        mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
+	                        echo "source activate work" >> "/home/proleu/.zshrc" ; \
+	                fi; \
+	        fi; \
 	fi
 
 install_nodejs:
