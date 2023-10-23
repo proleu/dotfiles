@@ -76,10 +76,3 @@ function dockerSummary() {
     echo -e "$title\n$($cmd | cut -c1-80)"
   done
 }
-
-# Conda 
-if command -v conda &>/dev/null; then
-    if conda env list | grep -q "work"; then
-        source activate work
-    fi
-fi
