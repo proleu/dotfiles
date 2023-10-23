@@ -21,6 +21,7 @@ install_mamba_env:
 	                        mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
 	                fi; \
 	        fi; \
+		conda init zsh; \
 	fi
 
 install_nodejs:
