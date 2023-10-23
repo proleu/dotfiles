@@ -4,14 +4,14 @@ all: install_mamba_env install_nodejs install_nvim update_nvim install_vscode in
 install_mamba_env:
 	if ! command -v conda &> /dev/null; then \
 	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-	        bash Miniforge3.sh -b -p "/home/proleu/conda"; \
+	        bash Miniforge3.sh -b -p "${HOME}/conda"; \
 	        rm Miniforge3.sh; \
-	        source "/home/proleu/conda/etc/profile.d/conda.sh"; \
-	        source "/home/proleu/conda/etc/profile.d/mamba.sh"; \
+	        source "${HOME}/conda/etc/profile.d/conda.sh"; \
+	        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
 	        conda activate; \
 	        echo "Creating conda environment 'work'"; \
-	        /home/proleu/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	        /home/proleu/conda/bin/conda init zsh; \
+	        ${HOME}/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
+	        ${HOME}/conda/bin/conda init zsh; \
 	else \
 	        if ! command -v mamba &> /dev/null; then \
 	                conda install -y mamba -c conda-forge; \
@@ -41,13 +41,13 @@ install_nvim: install_nodejs
 	fi
 
 update_nvim: install_nvim
-	mkdir -p "/home/proleu/.config/nvim"
-	if [ -f "/home/proleu/.config/nvim/init.vim" ]; then \
-		cat "/home/proleu/.config/nvim/init.vim" > "/home/proleu/.config/nvim/init.vim.bak"; \
+	mkdir -p "${HOME}/.config/nvim"
+	if [ -f "${HOME}/.config/nvim/init.vim" ]; then \
+		cat "${HOME}/.config/nvim/init.vim" > "${HOME}/.config/nvim/init.vim.bak"; \
 	else \
 		echo "No existing init.vim file found."; \
 	fi
-	cp init.vim "/home/proleu/.config/nvim/init.vim"
+	cp init.vim "${HOME}/.config/nvim/init.vim"
 	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
 
