@@ -25,7 +25,5 @@ fi
 echo "Please restart your shell to complete the shell change, then press any key to continue..."
 read -n 1 -s
 
-# Run the Makefiles
-make -f ShellSetupMakefile
-make -f EnvironmentSetupMakefile
+make -f Makefile
 
