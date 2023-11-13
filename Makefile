@@ -74,8 +74,8 @@ install_nvim: install_nodejs
 		curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage ; \
 		chmod u+x nvim.appimage ; \
 		sudo mkdir -p /usr/local/bin ; \
-		sudo mv nvim.appimage /usr/local/bin/nvim.appimage; \
-		CUSTOM_NVIM_PATH=/usr/local/bin/nvim.appimage; \
+		sudo mv nvim.appimage /usr/local/bin/nvim.appimage ; \
+		CUSTOM_NVIM_PATH="/usr/local/bin/nvim.appimage" ; \
 		set -u ; \
 		sudo update-alternatives --install /usr/bin/ex ex "${CUSTOM_NVIM_PATH}" 110 ; \
 		sudo update-alternatives --install /usr/bin/vi vi "${CUSTOM_NVIM_PATH}" 110 ; \
