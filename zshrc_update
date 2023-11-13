@@ -39,7 +39,6 @@ source $ZSH/oh-my-zsh.sh
 
 # User Configuration
 export EDITOR='nvim'
-bindkey -v
 
 # Aliases
 alias b="cd .."
