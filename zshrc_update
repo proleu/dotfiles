@@ -53,6 +53,7 @@ alias so="source $HOME/.zshrc"
 # Functions
 function count_pdbs() { find -type f -name "*.pdb*" | wc -l; }
 function fetch() { wget http://www.rcsb.org/pdb/files/$1.pdb.gz || wget ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/pdb/pdb$1.ent.gz; }
+function gh_auth() { gh auth login -p https -w }
 function mcd() { mkdir -p $1; cd $1; }
 function swap() {
     local TMPFILE=tmp.$$
