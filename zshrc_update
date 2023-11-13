@@ -74,3 +74,19 @@ function dockerSummary() {
     echo -e "$title\n$($cmd | cut -c1-80)"
   done
 }
+
+function fetch_aws_batch_logs() {
+    local log_stream_name=$1
+    local cmd="aws logs get-log-events --log-group-name /aws/batch/job --log-stream-name ${log_stream_name} --start-from-head --output text"
+    local response=$(eval "$cmd") || return 1
+
+    while :; do
+        if [[ $(wc -l <<< "$response") -eq 1 ]]; then
+            break
+        fi
+
+        tail -n +2 <<< "$response"
+        local meta=($(head -n 1 <<< "$response"))
+        response=$(eval "$cmd --next-token ${meta[1]}") || return 1
+    done
+}
