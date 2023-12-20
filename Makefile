@@ -43,7 +43,7 @@ install_mamba_env: install_plugins
 	        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
 	        conda activate; \
 	        echo "Creating conda environment 'work'"; \
-	        ${HOME}/conda/bin/mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
+	        ${HOME}/conda/bin/mamba create -n work python=3.11.4 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
 	        ${HOME}/conda/bin/conda init zsh; \
 			echo "conda activate work" >> "${HOME}/.zshrc" ; \
 	else \
