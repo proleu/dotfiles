@@ -3,7 +3,7 @@ all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pye
 
 update_gitconfig:
 	git config --global user.name "Philip Leung"
-	git config --globel core.editor "nvim"
+	git config --global core.editor "nvim"
 	git config --global init.defaultBranch "main"
 	git config --global push.default "current"
 	git config --global push.autoSetupRemote "true"
