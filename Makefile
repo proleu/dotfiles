@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
+all: update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_vscode restart_shell
 
 update_zshrc:
 	if [ -f "$${HOME}/.zshrc" ]; then \
@@ -113,17 +113,16 @@ update_nvim: install_nvim
 	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
 
-install_vscode:
-	if ! command -v code &> /dev/null; then \
-		wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg ; \
-		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
-		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
-		rm -f packages.microsoft.gpg ; \
-		sudo apt update ; \
-		sudo apt install code -y ; \
-	else \
-		echo "VS Code is already installed." ; \
-	fi
+install_docker:
+	# Add Docker's official GPG key:
+	sudo install -m 0755 -d /etc/apt/keyrings
+	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	sudo chmod a+r /etc/apt/keyrings/docker.asc
+	echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+		$$(. /etc/os-release && echo "$$VERSION_CODENAME") stable" | \
+		sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	sudo apt-get update
+	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
@@ -143,5 +142,19 @@ install_tf:
 		else \
 			echo "terraform is already installed."; \
 		fi
+
+install_vscode:
+	if ! command -v code &> /dev/null; then \
+		wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg ; \
+		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
+		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
+		rm -f packages.microsoft.gpg ; \
+		sudo apt update ; \
+		sudo apt install code -y ; \
+	else \
+		echo "VS Code is already installed." ; \
+	fi
+
 restart_shell:
 	echo "Please restart your shell for changes to take effect"
+

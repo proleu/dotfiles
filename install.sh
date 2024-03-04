@@ -3,6 +3,8 @@
 # Define and sort all required packages
 required_packages=(
   build-essential
+  ca-certificates
+  curl
   fzf
   fuse
   gh
@@ -21,6 +23,7 @@ required_packages=(
   tmux
   tree
   unzip
+  wget
   zlib1g-dev
   zsh
 )
