@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
 	if [ -f "$${HOME}/.gitconfig" ]; then \
@@ -147,9 +147,17 @@ install_tf:
 			unzip terraform_1.6.0_linux_amd64.zip; \
 			sudo mv terraform /usr/local/bin/; \
 			rm terraform_1.6.0_linux_amd64.zip; \
-		else \
-			echo "terraform is already installed."; \
-		fi
+	else \
+		echo "terraform is already installed."; \
+	fi
+install_s3mount:
+	if ! command -v mount-s3 &> /dev/null; then \
+		wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.deb; \
+		sudo apt-get install ./mount-s3.deb; \
+		rm mount-s3.deb
+	else \
+		echo "s3-mountpoint is already installed." ; \
+	fi
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
