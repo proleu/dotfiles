@@ -42,6 +42,7 @@ install_pyenv: install_plugins
 	fi
 	# Install pyenv
 	echo "Installing pyenv..."
+	rm -rf "$${HOME}/.pyenv"
 	curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 	# Append pyenv init to .zshrc in a safe manner
 	echo 'export PYENV_ROOT="$${HOME}/.pyenv"' >> "$${HOME}/.zshrc"
@@ -59,7 +60,7 @@ install_pyenv: install_plugins
 		python3 -m pip install --user pipx; \
 		python3 -m pipx ensurepath; \
 		pipx install pipenv==2023.6.12; \
-		pipx install --upgrade pip setuptools virtualenv wheel;
+		pip install --upgrade pip setuptools virtualenv wheel;
 	echo "pyenv with Python 3.11.4 installed and configured globally."
 
 update_pyenv: install_pyenv
@@ -72,7 +73,6 @@ update_pyenv: install_pyenv
 	cd $$HOME; \
 		pipenv lock; \
 		pipenv sync; 
-	echo 'pipenv shell' >> "$${HOME}/.zshrc"
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
