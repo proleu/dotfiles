@@ -19,9 +19,6 @@ ZSH_THEME="robbyrussell"
 # Paths
 fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 export ZSH="$HOME/.oh-my-zsh"
-if [ -d "${HOME}/conda/bin" ]; then
-    export PATH="${HOME}/conda/bin:$PATH"
-fi
 
 # Plugins
 plugins=(

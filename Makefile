@@ -1,16 +1,16 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_mamba_env install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
+all: update_zshrc install_oh_my_zsh install_plugins install_pyenv install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
 
 update_zshrc:
-	if [ -f "$$HOME/.zshrc" ]; then \
-		cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"; \
+	if [ -f "$${HOME}/.zshrc" ]; then \
+		cat "$${HOME}/.zshrc" > "$${HOME}/.zshrc.bak"; \
 	else \
 		echo "No existing .zshrc file found."; \
 	fi; \
-	cp zshrc_update "$$HOME/.zshrc"
+	cp zshrc_update "$${HOME}/.zshrc"
 
 install_oh_my_zsh: update_zshrc
-	if [ ! -d "$$HOME/.oh-my-zsh" ]; then \
+	if [ ! -d "$${HOME}/.oh-my-zsh" ]; then \
 		sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc; \
 		echo "Type 'exit' to continue installation script."; \
 	else \
@@ -26,7 +26,7 @@ install_plugins: install_oh_my_zsh
 	); \
 	for plugin in "$${!plugins[@]}"; do \
 		plugin_url="$${plugins[$$plugin]}"; \
-		plugin_dir="$$HOME/.oh-my-zsh/custom/plugins/$$plugin"; \
+		plugin_dir="$${HOME}/.oh-my-zsh/custom/plugins/$${plugin}"; \
 		if [ ! -d "$$plugin_dir" ]; then \
 				git clone "$$plugin_url" "$$plugin_dir"; \
 		else \
@@ -34,30 +34,33 @@ install_plugins: install_oh_my_zsh
 		fi; \
 	done
 
-install_mamba_env: install_plugins
-	if ! command -v conda &> /dev/null; then \
-	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-	        bash Miniforge3.sh -b -p "${HOME}/conda"; \
-	        rm Miniforge3.sh; \
-	        source "${HOME}/conda/etc/profile.d/conda.sh"; \
-	        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
-	        conda activate; \
-	        echo "Creating conda environment 'work'"; \
-	        ${HOME}/conda/bin/mamba create -n work python=3.11.4 awscli cruft mypy pynvim ruff setuptools virtualenv wheel -c conda-forge -y; \
-	        ${HOME}/conda/bin/conda init zsh; \
-			echo "conda activate work" >> "${HOME}/.zshrc" ; \
-	else \
-	        if ! command -v mamba &> /dev/null; then \
-	                conda install -y mamba -c conda-forge; \
-	                mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	        else \
-	                if ! conda env list | grep -q "work"; then \
-	                        mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	                fi; \
-	        fi; \
-		conda init zsh; \
-		echo "conda activate work" >> "${HOME}/.zshrc" ; \
+install_pyenv: install_plugins
+	# Remove any existing Conda installations first
+	if [ -d "$${HOME}/conda" ] || [ -d "$${HOME}/miniconda3" ] || [ -d "$${HOME}/anaconda3" ]; then \
+		echo "Removing existing Conda installations..."; \
+		rm -rf "$${HOME}/conda" "$${HOME}/miniconda3" "$${HOME}/anaconda3"; \
 	fi
+	# Install pyenv
+	echo "Installing pyenv..."
+	curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+	# Append pyenv init to .zshrc in a safe manner
+	echo 'export PYENV_ROOT="$${HOME}/.pyenv"' >> "$${HOME}/.zshrc"
+	echo '[ -d "$${PYENV_ROOT}/bin" ] && export PATH="$${PYENV_ROOT}/bin:$${PATH}"' >> "$${HOME}/.zshrc"
+	echo 'eval "$$(pyenv init -)"' >> "$${HOME}/.zshrc"
+	echo 'eval "$$(pyenv virtualenv-init -)"' >> "$${HOME}/.zshrc"
+	# Initialize pyenv for the current shell to ensure the pyenv commands run correctly
+	export PYENV_ROOT="$${HOME}/.pyenv"; \
+		export PATH="$${PYENV_ROOT}/bin:$${PATH}"; \
+		eval "$$(pyenv init -)"; \
+		eval "$$(pyenv virtualenv-init -)"; \
+		pyenv install 3.11.4; \
+		pyenv global 3.11.4; \
+		pyenv rehash; \
+		python3 -m pip install --user pipx; \
+		python3 -m pipx ensurepath; \
+		pipx install pipenv==2023.6.12; \
+		pipx install --upgrade pip pipenv==2023.6.12 setuptools virtualenv wheel;
+	echo "pyenv with Python 3.11.4 installed and configured globally."
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
