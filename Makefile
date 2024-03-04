@@ -150,11 +150,13 @@ install_tf:
 	else \
 		echo "terraform is already installed."; \
 	fi
+
+
 install_s3mount:
 	if ! command -v mount-s3 &> /dev/null; then \
 		wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.deb; \
 		sudo apt-get install ./mount-s3.deb; \
-		rm mount-s3.deb
+		rm mount-s3.deb; \
 	else \
 		echo "s3-mountpoint is already installed." ; \
 	fi
