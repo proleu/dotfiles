@@ -44,9 +44,9 @@ install_plugins: install_oh_my_zsh
 
 install_pyenv: install_plugins
 	# Remove any existing Conda installations first
-	if [ -d "$${HOME}/conda" ] || [ -d "$${HOME}/miniconda3" ] || [ -d "$${HOME}/anaconda3" ]; then \
+	if [ -d "$${HOME}/conda" ] || [ -d "$${HOME}/miniconda3" ] || [ -d "$${HOME}/anaconda3" ] || [ -d "opt/conda" ]; then \
 		echo "Removing existing Conda installations..."; \
-		rm -rf "$${HOME}/conda" "$${HOME}/miniconda3" "$${HOME}/anaconda3"; \
+		rm -rf "$${HOME}/conda" "$${HOME}/miniconda3" "$${HOME}/anaconda3" "/opt/conda"; \
 	fi
 	# Install pyenv
 	echo "Installing pyenv..."
