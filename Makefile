@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_pyenv install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
+all: update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
 
 update_zshrc:
 	if [ -f "$${HOME}/.zshrc" ]; then \
@@ -59,8 +59,20 @@ install_pyenv: install_plugins
 		python3 -m pip install --user pipx; \
 		python3 -m pipx ensurepath; \
 		pipx install pipenv==2023.6.12; \
-		pipx install --upgrade pip pipenv==2023.6.12 setuptools virtualenv wheel;
+		pipx install --upgrade pip setuptools virtualenv wheel;
 	echo "pyenv with Python 3.11.4 installed and configured globally."
+
+update_pyenv: install_pyenv
+	if [ -f "$${HOME}/Pipfile" ]; then \
+		cat "$${HOME}/Pipfile" > "$${HOME}/Pipfile.bak"; \
+	else \
+		echo "No existing Pipfile file found."; \
+	fi; \
+	cp Pipfile "$${HOME}/Pipfile"
+	cd $$HOME; \
+		pipenv lock; \
+		pipenv sync; 
+	echo 'pipenv shell' >> "$${HOME}/.zshrc"
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
