@@ -35,11 +35,12 @@ sudo apt update
 sudo apt install -y "${required_packages[@]}"
 
 # Check if running in Zsh
-if [ -n "$ZSH_VERSION" ]; then
+if [[ -n "$ZSH_VERSION" ]]; then
   echo "Running in Zsh."
 else
   echo "Not running in Zsh. Attempting to change shell to Zsh..."
   if sudo chsh -s "$(which zsh)" "$USER"; then
+    touch ${HOME}/.zshrc
     echo "Shell changed to Zsh. Please re-login. Exiting..."
     sleep 3
     exit 0
