@@ -1,16 +1,24 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_mamba_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
+
+update_gitconfig:
+	if [ -f "$${HOME}/.gitconfig" ]; then \
+		cat "$${HOME}/.gitconfig" > "$${HOME}/.gitconfig.bak"; \
+	else \
+		echo "No existing .gitconfig file found."; \
+	fi; \
+	cp gitconfig "$${HOME}/.gitconfig"
 
 update_zshrc:
-	if [ -f "$$HOME/.zshrc" ]; then \
-		cat "$$HOME/.zshrc" > "$$HOME/.zshrc.bak"; \
+	if [ -f "$${HOME}/.zshrc" ]; then \
+		cat "$${HOME}/.zshrc" > "$${HOME}/.zshrc.bak"; \
 	else \
 		echo "No existing .zshrc file found."; \
 	fi; \
-	cp zshrc_update "$$HOME/.zshrc"
+	cp zshrc_update "$${HOME}/.zshrc"
 
 install_oh_my_zsh: update_zshrc
-	if [ ! -d "$$HOME/.oh-my-zsh" ]; then \
+	if [ ! -d "$${HOME}/.oh-my-zsh" ]; then \
 		sh -c "$$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc; \
 		echo "Type 'exit' to continue installation script."; \
 	else \
@@ -26,7 +34,7 @@ install_plugins: install_oh_my_zsh
 	); \
 	for plugin in "$${!plugins[@]}"; do \
 		plugin_url="$${plugins[$$plugin]}"; \
-		plugin_dir="$$HOME/.oh-my-zsh/custom/plugins/$$plugin"; \
+		plugin_dir="$${HOME}/.oh-my-zsh/custom/plugins/$${plugin}"; \
 		if [ ! -d "$$plugin_dir" ]; then \
 				git clone "$$plugin_url" "$$plugin_dir"; \
 		else \
@@ -34,30 +42,45 @@ install_plugins: install_oh_my_zsh
 		fi; \
 	done
 
-install_mamba_env: install_plugins
-	if ! command -v conda &> /dev/null; then \
-	        wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Mambaforge-23.3.1-1-Linux-x86_64.sh"; \
-	        bash Miniforge3.sh -b -p "${HOME}/conda"; \
-	        rm Miniforge3.sh; \
-	        source "${HOME}/conda/etc/profile.d/conda.sh"; \
-	        source "${HOME}/conda/etc/profile.d/mamba.sh"; \
-	        conda activate; \
-	        echo "Creating conda environment 'work'"; \
-	        ${HOME}/conda/bin/mamba create -n work python=3.11.4 awscli cruft mypy pynvim ruff setuptools virtualenv wheel -c conda-forge -y; \
-	        ${HOME}/conda/bin/conda init zsh; \
-			echo "conda activate work" >> "${HOME}/.zshrc" ; \
-	else \
-	        if ! command -v mamba &> /dev/null; then \
-	                conda install -y mamba -c conda-forge; \
-	                mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	        else \
-	                if ! conda env list | grep -q "work"; then \
-	                        mamba create -n work python=3.11 black pynvim isort awscli wheel setuptools virtualenv -c conda-forge -y; \
-	                fi; \
-	        fi; \
-		conda init zsh; \
-		echo "conda activate work" >> "${HOME}/.zshrc" ; \
+install_pyenv: install_plugins
+	# Remove any existing Conda installations first
+	if [ -d "$${HOME}/conda" ] || [ -d "$${HOME}/miniconda3" ] || [ -d "$${HOME}/anaconda3" ] || [ -d "opt/conda" ]; then \
+		echo "Removing existing Conda installations..."; \
+		rm -rf "$${HOME}/conda" "$${HOME}/miniconda3" "$${HOME}/anaconda3" "/opt/conda"; \
 	fi
+	# Install pyenv
+	echo "Installing pyenv..."
+	rm -rf "$${HOME}/.pyenv"
+	curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+	# Append pyenv init to .zshrc in a safe manner
+	echo 'export PYENV_ROOT="$${HOME}/.pyenv"' >> "$${HOME}/.zshrc"
+	echo '[ -d "$${PYENV_ROOT}/bin" ] && export PATH="$${PYENV_ROOT}/bin:$${PATH}"' >> "$${HOME}/.zshrc"
+	echo 'eval "$$(pyenv init -)"' >> "$${HOME}/.zshrc"
+	echo 'eval "$$(pyenv virtualenv-init -)"' >> "$${HOME}/.zshrc"
+	# Initialize pyenv for the current shell to ensure the pyenv commands run correctly
+	export PYENV_ROOT="$${HOME}/.pyenv"; \
+		export PATH="$${PYENV_ROOT}/bin:$${PATH}"; \
+		eval "$$(pyenv init -)"; \
+		eval "$$(pyenv virtualenv-init -)"; \
+		pyenv install 3.11.4; \
+		pyenv global 3.11.4; \
+		pyenv rehash; \
+		python3 -m pip install --user pipx; \
+		python3 -m pipx ensurepath; \
+		pipx install pipenv==2023.6.12; \
+		pip install --upgrade pip setuptools virtualenv wheel;
+	echo "pyenv with Python 3.11.4 installed and configured globally."
+
+update_pyenv: install_pyenv
+	if [ -f "$${HOME}/Pipfile" ]; then \
+		cat "$${HOME}/Pipfile" > "$${HOME}/Pipfile.bak"; \
+	else \
+		echo "No existing Pipfile file found."; \
+	fi; \
+	cp Pipfile "$${HOME}/Pipfile"
+	cd $$HOME; \
+		pipenv lock; \
+		pipenv sync; 
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
@@ -71,7 +94,6 @@ install_nodejs:
 
 install_nvim: install_nodejs
 	if ! command -v nvim &> /dev/null; then \
-		sudo apt-get install fuse libfuse2 -y ; \
 		curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage ; \
 		chmod u+x nvim.appimage ; \
 		sudo mkdir -p /usr/local/bin ; \
@@ -99,49 +121,28 @@ update_nvim: install_nvim
 	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
 
-install_vscode:
-	if ! command -v code &> /dev/null; then \
-		wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg ; \
-		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
-		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
-		rm -f packages.microsoft.gpg ; \
-		sudo apt install apt-transport-https ; \
-		sudo apt update ; \
-		sudo apt install code -y ; \
+install_aws:
+	if ! command -v aws > /dev/null 2>&1; then \
+		curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+		unzip awscliv2.zip; \
+		sudo ./aws/install; \
+		rm -rf aws; \
 	else \
-		echo "VS Code is already installed." ; \
+		echo "awscli is already installed."; \
 	fi
 
-install_tmux:
-	if ! command -v tmux &> /dev/null; then \
-		sudo apt update && sudo apt install -y tmux; \
-	else \
-		echo "tmux is already installed."; \
-	fi
+install_docker:
+	# Add Docker's official GPG key:
+	sudo install -m 0755 -d /etc/apt/keyrings
+	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	sudo chmod a+r /etc/apt/keyrings/docker.asc
+	echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+		$$(. /etc/os-release && echo "$$VERSION_CODENAME") stable" | \
+		sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	sudo apt-get update
+	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-install_openvpn:
-	if ! command -v openvpn &> /dev/null; then \
-		sudo apt update && sudo apt install -y openvpn; \
-	else \
-		echo "OpenVPN is already installed."; \
-	fi
-
-install_fzf:
-	if ! command -v fzf > /dev/null 2>&1; then \
-		sudo apt update && sudo apt install -y fzf; \
-	else \
-		echo "fzf is already installed."; \
-	fi
-
-install_java:
-	if ! command -v java &> /dev/null; then \
-		sudo apt update && sudo apt install -y openjdk-11-jdk; \
-	else \
-		echo "Java is already installed."; \
-	fi
-
-
-install_nf: install_java
+install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
 		curl -s https://get.nextflow.io | bash; \
 		chmod +x nextflow; \
@@ -150,21 +151,38 @@ install_nf: install_java
 		echo "nextflow is already installed."; \
 	fi
 
-install_unzip:
-	if ! command -v unzip > /dev/null 2>&1; then \
-		sudo apt update && sudo apt install -y unzip; \
-	else \
-		echo "unzip is already installed."; \
-	fi
-
-install_tf: install_unzip
+install_tf:
 	if ! command -v terraform > /dev/null 2>&1; then \
 		wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
 			unzip terraform_1.6.0_linux_amd64.zip; \
 			sudo mv terraform /usr/local/bin/; \
 			rm terraform_1.6.0_linux_amd64.zip; \
-		else \
-			echo "terraform is already installed."; \
-		fi
+	else \
+		echo "terraform is already installed."; \
+	fi
+
+
+install_s3mount:
+	if ! command -v mount-s3 &> /dev/null; then \
+		wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.deb; \
+		sudo apt-get install ./mount-s3.deb; \
+		rm mount-s3.deb; \
+	else \
+		echo "s3-mountpoint is already installed." ; \
+	fi
+
+install_vscode:
+	if ! command -v code &> /dev/null; then \
+		wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg ; \
+		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
+		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
+		rm -f packages.microsoft.gpg ; \
+		sudo apt update ; \
+		sudo apt install code -y ; \
+	else \
+		echo "VS Code is already installed." ; \
+	fi
+
 restart_shell:
 	echo "Please restart your shell for changes to take effect"
+

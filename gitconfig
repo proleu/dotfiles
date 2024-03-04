@@ -1,0 +1,26 @@
+[user]
+    name = Philip Leung
+    email = philipjleung@gmail.com	
+[core]
+    editor = vi
+    # excludesfile = /home/proleu/.git/.gitignore_global
+[push]
+    default = current
+    autoSetupRemote = true
+[alias] # from Justin
+    # If the alias expansion is prefixed with an exclamation point, it will be treated as a shell command.
+    ac = "!git add -A && git commit -a"
+    # 1) Remove tracking refs that no longer exist in origin
+    # 2) Remove local branches merged into remote main, except for "main"
+    # 3) Remove remote branches that have been merged that fit my prefix
+    # 4) Prune tracking refs again
+    clean-repo = "!git checkout main; git pull; git remote prune origin; git branch --merged origin/main | grep -v 'main$' | xargs git branch -d; git branch -r --merged origin/main | cut -d'/' -f 2 | grep '^justin-yan/' | xargs -I% git push origin :% 2>&1 | grep --colour=never 'deleted'; git remote prune origin"
+    # Set your branch's upstream in case you forgot to push -u
+    set-upstream = "!git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`"
+    find-merge = "!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2'"
+    mainlog = log --graph --first-parent
+[pull]
+    rebase = false
+[init]
+    defaultBranch = main
+

@@ -1,24 +1,38 @@
 #!/bin/bash
 
-# Check if 'make', 'zsh', and 'gh' are installed, if not, add them to the list to be installed
-packages_to_install=()
-if ! command -v make &> /dev/null; then
-  packages_to_install+=("make")
-fi
+# Define and sort all required packages
+required_packages=(
+  build-essential
+  ca-certificates
+  curl
+  fzf
+  fuse
+  gh
+  jq
+  libbz2-dev
+  libffi-dev
+  libfuse2
+  liblzma-dev
+  libreadline-dev
+  libsqlite3-dev
+  libssl-dev
+  make
+  openjdk-11-jdk
+  openvpn
+  python3-dev
+  tmux
+  tree
+  unzip
+  wget
+  zlib1g-dev
+  zsh
+)
 
-if ! command -v zsh &> /dev/null; then
-  packages_to_install+=("zsh")
-fi
+echo "Updating package list and ensuring all utilities are installed or at their latest version..."
+sudo apt update
 
-if ! command -v gh &> /dev/null; then
-  packages_to_install+=("gh")
-fi
-
-# Install required packages if any are missing
-if [ ${#packages_to_install[@]} -gt 0 ]; then
-  echo "Installing required packages: ${packages_to_install[@]}"
-  sudo apt update && sudo apt install -y "${packages_to_install[@]}"
-fi
+# Install or update all required packages
+sudo apt install -y "${required_packages[@]}"
 
 # Attempt to change the shell to Zsh
 if sudo chsh -s "$(which zsh)" "$USER"; then
