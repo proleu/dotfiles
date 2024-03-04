@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_mamba_env install_nodejs install_nvim update_nvim install_vscode install_tmux install_openvpn install_fzf install_java install_nf install_unzip install_tf restart_shell
+all: update_zshrc install_oh_my_zsh install_plugins install_mamba_env install_nodejs install_nvim update_nvim install_vscode install_nf install_tf restart_shell
 
 update_zshrc:
 	if [ -f "$$HOME/.zshrc" ]; then \
@@ -71,7 +71,6 @@ install_nodejs:
 
 install_nvim: install_nodejs
 	if ! command -v nvim &> /dev/null; then \
-		sudo apt-get install fuse libfuse2 -y ; \
 		curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage ; \
 		chmod u+x nvim.appimage ; \
 		sudo mkdir -p /usr/local/bin ; \
@@ -105,43 +104,13 @@ install_vscode:
 		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
 		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
 		rm -f packages.microsoft.gpg ; \
-		sudo apt install apt-transport-https ; \
 		sudo apt update ; \
 		sudo apt install code -y ; \
 	else \
 		echo "VS Code is already installed." ; \
 	fi
 
-install_tmux:
-	if ! command -v tmux &> /dev/null; then \
-		sudo apt update && sudo apt install -y tmux; \
-	else \
-		echo "tmux is already installed."; \
-	fi
-
-install_openvpn:
-	if ! command -v openvpn &> /dev/null; then \
-		sudo apt update && sudo apt install -y openvpn; \
-	else \
-		echo "OpenVPN is already installed."; \
-	fi
-
-install_fzf:
-	if ! command -v fzf > /dev/null 2>&1; then \
-		sudo apt update && sudo apt install -y fzf; \
-	else \
-		echo "fzf is already installed."; \
-	fi
-
-install_java:
-	if ! command -v java &> /dev/null; then \
-		sudo apt update && sudo apt install -y openjdk-11-jdk; \
-	else \
-		echo "Java is already installed."; \
-	fi
-
-
-install_nf: install_java
+install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
 		curl -s https://get.nextflow.io | bash; \
 		chmod +x nextflow; \
@@ -150,14 +119,7 @@ install_nf: install_java
 		echo "nextflow is already installed."; \
 	fi
 
-install_unzip:
-	if ! command -v unzip > /dev/null 2>&1; then \
-		sudo apt update && sudo apt install -y unzip; \
-	else \
-		echo "unzip is already installed."; \
-	fi
-
-install_tf: install_unzip
+install_tf:
 	if ! command -v terraform > /dev/null 2>&1; then \
 		wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
 			unzip terraform_1.6.0_linux_amd64.zip; \
