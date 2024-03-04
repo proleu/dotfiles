@@ -2,18 +2,26 @@
 
 # Define and sort all required packages
 required_packages=(
-  apt-transport-https
+  build-essential
   fzf
   fuse
   gh
   jq
+  libbz2-dev
+  libffi-dev
   libfuse2
+  liblzma-dev
+  libreadline-dev
+  libsqlite3-dev
+  libssl-dev
   make
   openjdk-11-jdk
   openvpn
+  python3-dev
   tmux
   tree
   unzip
+  zlib1g-dev
   zsh
 )
 
