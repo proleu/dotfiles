@@ -2,12 +2,15 @@ SHELL := /bin/bash
 all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
-	if [ -f "$${HOME}/.gitconfig" ]; then \
-		cat "$${HOME}/.gitconfig" > "$${HOME}/.gitconfig.bak"; \
-	else \
-		echo "No existing .gitconfig file found."; \
-	fi; \
-	cp gitconfig "$${HOME}/.gitconfig"
+	git config --global user.name "Philip Leung"
+	git config --globel core.editor "nvim"
+	git config --global init.defaultBranch "main"
+	git config --global push.default "current"
+	git config --global push.autoSetupRemote "true"
+	git config --global pull.rebase "false"
+	git config --global alias.ac "!git add -A && git commit -a"
+	git config --global alias.mainlog "log --graph --first-parent"
+	git config --global alias.set-upstream "!git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`"
 
 update_zshrc:
 	if [ -f "$${HOME}/.zshrc" ]; then \
