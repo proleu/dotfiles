@@ -1,5 +1,13 @@
 SHELL := /bin/bash
-all: update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_vscode restart_shell
+
+update_gitconfig:
+	if [ -f "$${HOME}/.gitconfig" ]; then \
+		cat "$${HOME}/.gitconfig" > "$${HOME}/.gitconfig.bak"; \
+	else \
+		echo "No existing .gitconfig file found."; \
+	fi; \
+	cp gitconfig "$${HOME}/.gitconfig"
 
 update_zshrc:
 	if [ -f "$${HOME}/.zshrc" ]; then \
