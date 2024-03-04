@@ -35,10 +35,11 @@ sudo apt update
 sudo apt install -y "${required_packages[@]}"
 
 # Check if running in Zsh
-if [[ -n "$ZSH_VERSION" ]]; then
-  echo "Running in Zsh."
+# Check if the default shell is Zsh
+if [ "$SHELL" = "$(which zsh)" ]; then
+  echo "Default shell is already Zsh."
 else
-  echo "Not running in Zsh. Attempting to change shell to Zsh..."
+  echo "Default shell is not Zsh. Attempting to change shell to Zsh..."
   if sudo chsh -s "$(which zsh)" "$USER"; then
     touch ${HOME}/.zshrc
     echo "Shell changed to Zsh. Please re-login. Exiting..."
