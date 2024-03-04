@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_docker install_nf install_tf install_s3mount install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
 	if [ -f "$${HOME}/.gitconfig" ]; then \
@@ -120,6 +120,16 @@ update_nvim: install_nvim
 	cp init.vim "${HOME}/.config/nvim/init.vim"
 	nvim -c "PlugInstall" -c "qa"
 	nvim -c "PlugUpdate" -c "qa"
+
+install_aws:
+	if ! command -v aws > /dev/null 2>&1; then \
+		curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
+		unzip awscliv2.zip; \
+		sudo ./aws/install; \
+		rm -rf aws; \
+	else \
+		echo "awscli is already installed."; \
+	fi
 
 install_docker:
 	# Add Docker's official GPG key:
