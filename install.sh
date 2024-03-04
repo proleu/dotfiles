@@ -34,15 +34,19 @@ sudo apt update
 # Install or update all required packages
 sudo apt install -y "${required_packages[@]}"
 
-# Attempt to change the shell to Zsh
-if sudo chsh -s "$(which zsh)" "$USER"; then
-  echo "Shell changed to Zsh."
+# Check if running in Zsh
+if [ -n "$ZSH_VERSION" ]; then
+  echo "Running in Zsh."
 else
-  echo "Failed to change the shell. Please have someone with root access run 'chsh -s $(which zsh) $USER'."
+  echo "Not running in Zsh. Attempting to change shell to Zsh..."
+  if sudo chsh -s "$(which zsh)" "$USER"; then
+    echo "Shell changed to Zsh. Please re-login. Exiting..."
+    sleep 3
+    exit 0
+  else
+    echo "Failed to change the shell. Please have someone with root access run 'chsh -s $(which zsh) $USER'."
+  fi
 fi
-
-echo "Please restart your shell to complete the shell change, then press any key to continue..."
-read -n 1 -s
 
 # Check if user.name and user.email are already set
 user_name=$(git config --get user.name)
