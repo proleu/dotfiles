@@ -5,11 +5,7 @@ name = "pypi"
 
 [packages]
 cruft = "*"
-dive-bin = "*"
-hadolint-bin = "*"
 ipython = "*"
-just-bin = "*"
-lazydocker-bin = "*"
 mypy = ">1.2"
 pip-licenses = "*"
 ruff = ">0.2.1"

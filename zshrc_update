@@ -44,6 +44,7 @@ alias bbb="cd ../../.."
 alias bbbb="cd ../../../.."
 alias bbbbb="cd ../../../../.."
 alias bbbbbb="cd ../../../../../.."
+alias lzd="lazydocker"
 alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
 
