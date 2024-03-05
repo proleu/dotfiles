@@ -8,6 +8,7 @@ cruft = "*"
 ipython = "*"
 mypy = ">1.2"
 pip-licenses = "*"
+pip-tools = "*"
 ruff = ">0.2.1"
 
 [dev-packages]
