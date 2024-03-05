@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
 	git config --global core.editor "nvim"
