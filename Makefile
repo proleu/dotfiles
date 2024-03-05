@@ -1,8 +1,7 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
-	git config --global user.name "Philip Leung"
 	git config --global core.editor "nvim"
 	git config --global init.defaultBranch "main"
 	git config --global push.default "current"
@@ -44,6 +43,15 @@ install_plugins: install_oh_my_zsh
 				echo "Plugin $$plugin is already installed."; \
 		fi; \
 	done
+
+setup_rsa:
+	if [ ! -d "$${HOME}/.ssh/" ]; then
+		mkdir "$${HOME}/.ssh"
+	fi
+	if [ ! -f "$${HOME}/.ssh/id_rsa" ] || [ ! -f "$${HOME}/.ssh/id_rsa.pub" ]; then
+		rm -f "$${HOME}/.ssh/id_rsa" "$${HOME}/.ssh/id_rsa.pub"
+		ssh-keygen -f "$${HOME}/.ssh/id_rsa" -t rsa -N ''
+	fi
 
 install_pyenv: install_plugins
 	# Remove any existing Conda installations first
