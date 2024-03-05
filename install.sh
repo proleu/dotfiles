@@ -8,6 +8,7 @@ required_packages=(
   fzf
   fuse
   gh
+  gnome-control-center
   jq
   libbz2-dev
   libffi-dev
