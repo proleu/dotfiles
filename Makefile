@@ -68,6 +68,12 @@ install_pyenv: install_plugins
 	echo '[ -d "$${PYENV_ROOT}/bin" ] && export PATH="$${PYENV_ROOT}/bin:$${PATH}"' >> "$${HOME}/.zshrc"
 	echo 'eval "$$(pyenv init -)"' >> "$${HOME}/.zshrc"
 	echo 'eval "$$(pyenv virtualenv-init -)"' >> "$${HOME}/.zshrc"
+	# Do it to .bashrc as well, just in case
+	echo 'export PYENV_ROOT="$${HOME}/.pyenv"' >> "$${HOME}/.bashrc"
+	echo '[ -d "$${PYENV_ROOT}/bin" ] && export PATH="$${PYENV_ROOT}/bin:$${PATH}"' >> "$${HOME}/.bashrc"
+	echo 'eval "$$(pyenv init -)"' >> "$${HOME}/.bashrc"
+	echo 'eval "$$(pyenv virtualenv-init -)"' >> "$${HOME}/.bashrc"
+	# Install Python 3.11.4 and configure it globally
 	export PYENV_ROOT="${HOME}/.pyenv"; \
 		export PATH="${PYENV_ROOT}/bin:${PATH}"; \
 		"$${HOME}/.pyenv/bin/pyenv" init -; \
@@ -89,11 +95,9 @@ update_pyenv: install_pyenv
 	fi; \
 	cp Pipfile "$${HOME}/Pipfile"
 	cd $$HOME; \
-		source "$${HOME}/.zshrc"; \
+		source "$${HOME}/.bashrc"; \
 		pipenv lock; \
 		pipenv sync
-		# "$${HOME}/.local/bin/pipenv" lock; \
-		# "$${HOME}/.local/bin/pipenv" sync 
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
