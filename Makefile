@@ -77,7 +77,7 @@ install_pyenv: install_plugins
 		"$${HOME}/.pyenv/bin/pyenv" rehash; \
 		"$${HOME}/.pyenv/shims/python3" -m pip install --user pipx; \
 		"$${HOME}/.pyenv/shims/python3" -m pipx ensurepath; \
-		"$${HOME}/.pyenv/shims/pipx" install pipenv==2023.6.12; \
+		"$${HOME}/.local/bin/pipx" install pipenv==2023.6.12; \
 		"$${HOME}/.pyenv/shims/pip" install --upgrade pip setuptools virtualenv wheel;
 	echo "pyenv with Python 3.11.4 installed and configured globally."
 
