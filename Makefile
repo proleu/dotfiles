@@ -89,8 +89,8 @@ update_pyenv: install_pyenv
 	fi; \
 	cp Pipfile "$${HOME}/Pipfile"
 	cd $$HOME; \
-		pipenv lock; \
-		pipenv sync; 
+		"$${HOME}/.local/bin/pipenv" lock; \
+		"$${HOME}/.local/bin/pipenv" sync 
 
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
