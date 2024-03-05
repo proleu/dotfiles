@@ -45,12 +45,12 @@ install_plugins: install_oh_my_zsh
 	done
 
 setup_rsa:
-	if [ ! -d "$${HOME}/.ssh/" ]; then
-		mkdir "$${HOME}/.ssh"
+	if [ ! -d "$${HOME}/.ssh/" ]; then \
+		mkdir "$${HOME}/.ssh"; \
 	fi
-	if [ ! -f "$${HOME}/.ssh/id_rsa" ] || [ ! -f "$${HOME}/.ssh/id_rsa.pub" ]; then
-		rm -f "$${HOME}/.ssh/id_rsa" "$${HOME}/.ssh/id_rsa.pub"
-		ssh-keygen -f "$${HOME}/.ssh/id_rsa" -t rsa -N ''
+	if [ ! -f "$${HOME}/.ssh/id_rsa" ] || [ ! -f "$${HOME}/.ssh/id_rsa.pub" ]; then \
+		rm -f "$${HOME}/.ssh/id_rsa" "$${HOME}/.ssh/id_rsa.pub"; \
+		ssh-keygen -f "$${HOME}/.ssh/id_rsa" -t rsa -N ''; \
 	fi
 
 install_pyenv: install_plugins
