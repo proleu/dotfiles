@@ -89,10 +89,7 @@ update_pyenv: install_pyenv
 	fi; \
 	cp Pipfile "$${HOME}/Pipfile"
 	cd $$HOME; \
-		eval "$$(pyenv init -)"; \
-		eval "$$(pyenv virtualenv-init -)"; \
-		export PYENV_ROOT="${HOME}/.pyenv"; \
-		export PATH="${PYENV_ROOT}/bin:${PATH}"; \
+		source "$${HOME}/.zshrc"; \
 		pipenv lock; \
 		pipenv sync
 		# "$${HOME}/.local/bin/pipenv" lock; \
