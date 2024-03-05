@@ -60,18 +60,17 @@ install_pyenv: install_plugins
 	echo '[ -d "$${PYENV_ROOT}/bin" ] && export PATH="$${PYENV_ROOT}/bin:$${PATH}"' >> "$${HOME}/.zshrc"
 	echo 'eval "$$(pyenv init -)"' >> "$${HOME}/.zshrc"
 	echo 'eval "$$(pyenv virtualenv-init -)"' >> "$${HOME}/.zshrc"
-	# Initialize pyenv for the current shell to ensure the pyenv commands run correctly
-	export PYENV_ROOT="$${HOME}/.pyenv"; \
-		export PATH="$${PYENV_ROOT}/bin:$${PATH}"; \
-		eval "$$(pyenv init -)"; \
-		eval "$$(pyenv virtualenv-init -)"; \
-		pyenv install 3.11.4; \
-		pyenv global 3.11.4; \
-		pyenv rehash; \
-		python3 -m pip install --user pipx; \
-		python3 -m pipx ensurepath; \
-		pipx install pipenv==2023.6.12; \
-		pip install --upgrade pip setuptools virtualenv wheel;
+	export PYENV_ROOT="${HOME}/.pyenv"; \
+		export PATH="${PYENV_ROOT}/bin:${PATH}"; \
+		"$${HOME}/.pyenv/bin/pyenv" init -; \
+		"$${HOME}/.pyenv/bin/pyenv" virtualenv-init -; \
+		"$${HOME}/.pyenv/bin/pyenv" install 3.11.4; \
+		"$${HOME}/.pyenv/bin/pyenv" global 3.11.4; \
+		"$${HOME}/.pyenv/bin/pyenv" rehash; \
+		"$${HOME}/.pyenv/shims/python3" -m pip install --user pipx; \
+		"$${HOME}/.pyenv/shims/python3" -m pipx ensurepath; \
+		"$${HOME}/.pyenv/shims/pipx" install pipenv==2023.6.12; \
+		"$${HOME}/.pyenv/shims/pip" install --upgrade pip setuptools virtualenv wheel;
 	echo "pyenv with Python 3.11.4 installed and configured globally."
 
 update_pyenv: install_pyenv
