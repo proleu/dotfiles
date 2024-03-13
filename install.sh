@@ -25,6 +25,7 @@ required_packages=(
   tree
   unzip
   wget
+  xclip
   zlib1g-dev
   zsh
 )
