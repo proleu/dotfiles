@@ -89,7 +89,7 @@ install_pyenv: install_plugins
 	echo "pyenv with Python 3.11.4 installed and configured globally."
 
 install_nodejs:
-	if ! command -v node &> /dev/null; then \
+	if ! type node &> /dev/null; then \
 		wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz; \
 		tar -xf node-v18.18.0-linux-x64.tar.xz; \
 		sudo cp node-v18.18.0-linux-x64/bin/* /usr/bin/; \
@@ -99,7 +99,7 @@ install_nodejs:
 	fi
 
 install_nvim: install_nodejs
-	if ! command -v nvim &> /dev/null; then \
+	if ! type nvim &> /dev/null; then \
 		curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage ; \
 		chmod u+x nvim.appimage ; \
 		sudo mkdir -p /usr/local/bin ; \
@@ -128,7 +128,7 @@ update_nvim: install_nvim
 	nvim -c "PlugUpdate" -c "qa"
 
 install_aws:
-	if ! command -v aws > /dev/null 2>&1; then \
+	if ! type aws > /dev/null 2>&1; then \
 		curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
 		unzip awscliv2.zip; \
 		sudo ./aws/install; \
@@ -139,7 +139,7 @@ install_aws:
 
 
 install_vscode:
-	if ! command -v code &> /dev/null; then \
+	if ! type code &> /dev/null; then \
 		wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg ; \
 		sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg ; \
 		sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list' ; \
