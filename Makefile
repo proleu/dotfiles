@@ -110,7 +110,7 @@ install_nvim: install_nodejs
 			# Second try: download the pre-compiled binary
 			echo "PPA installation failed, trying to download pre-compiled binary..." ; \
 			NVIM_VERSION="v0.9.5" ; \
-			wget -q "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz" ; \
+			wget -q "https://github.com/neovim/neovim/releases/download/$${NVIM_VERSION}/nvim-linux64.tar.gz" ; \
 			if [ -f "nvim-linux64.tar.gz" ]; then \
 				sudo rm -rf /opt/nvim ; \
 				sudo mkdir -p /opt/nvim ; \
@@ -126,7 +126,7 @@ install_nvim: install_nodejs
 		fi ; \
 		# Set up the editor alternatives
 		if type nvim &> /dev/null; then \
-			NVIM_PATH=$(which nvim) ; \
+			NVIM_PATH=$$(which nvim) ; \
 			sudo update-alternatives --install /usr/bin/vi vi "$${NVIM_PATH}" 110 ; \
 			sudo update-alternatives --install /usr/bin/vim vim "$${NVIM_PATH}" 110 ; \
 			sudo update-alternatives --install /usr/bin/editor editor "$${NVIM_PATH}" 110 ; \
@@ -134,7 +134,7 @@ install_nvim: install_nodejs
 			for cmd in ex view vimdiff; do \
 				if ! type "$${cmd}" &> /dev/null; then \
 					echo '#!/bin/sh' | sudo tee "/usr/local/bin/$${cmd}" > /dev/null ; \
-					echo 'exec nvim -c "'"$${cmd}"'" "$$@"' | sudo tee -a "/usr/local/bin/$${cmd}" > /dev/null ; \
+					echo "exec nvim -c '$${cmd}' \"\$$@\"" | sudo tee -a "/usr/local/bin/$${cmd}" > /dev/null ; \
 					sudo chmod +x "/usr/local/bin/$${cmd}" ; \
 				fi ; \
 			done ; \
@@ -179,4 +179,3 @@ install_vscode:
 
 restart_shell:
 	echo "Please restart your shell for changes to take effect"
-
