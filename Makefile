@@ -100,20 +100,47 @@ install_nodejs:
 
 install_nvim: install_nodejs
 	if ! type nvim &> /dev/null; then \
-		curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage ; \
-		chmod u+x nvim.appimage ; \
-		sudo mkdir -p /usr/local/bin ; \
-		sudo mv nvim.appimage /usr/local/bin/nvim.appimage ; \
-		export CUSTOM_NVIM_PATH="/usr/local/bin/nvim.appimage" ; \
-		set -u ; \
-		sudo update-alternatives --install /usr/bin/nvim nvim "$${CUSTOM_NVIM_PATH}" 110 ; \
-		sudo update-alternatives --install /usr/bin/ex ex "$${CUSTOM_NVIM_PATH}" 110 ; \
-		sudo update-alternatives --install /usr/bin/vi vi "$${CUSTOM_NVIM_PATH}" 110 ; \
-		sudo update-alternatives --install /usr/bin/view view "$${CUSTOM_NVIM_PATH}" 110 ; \
-		sudo update-alternatives --install /usr/bin/vim vim "$${CUSTOM_NVIM_PATH}" 110 ; \
-		sudo update-alternatives --install /usr/bin/vimdiff vimdiff "$${CUSTOM_NVIM_PATH}" 110 ; \
+		echo "Installing Neovim..." ; \
+		# First try: use the official PPA (this is Ubuntu's recommended method)
+		if sudo add-apt-repository ppa:neovim-ppa/unstable -y && \
+		   sudo apt-get update && \
+		   sudo apt-get install -y neovim; then \
+			echo "Neovim successfully installed from PPA." ; \
+		else \
+			# Second try: download the pre-compiled binary
+			echo "PPA installation failed, trying to download pre-compiled binary..." ; \
+			NVIM_VERSION="v0.9.5" ; \
+			wget -q "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux64.tar.gz" ; \
+			if [ -f "nvim-linux64.tar.gz" ]; then \
+				sudo rm -rf /opt/nvim ; \
+				sudo mkdir -p /opt/nvim ; \
+				sudo tar -xzf nvim-linux64.tar.gz -C /opt/nvim --strip-components=1 ; \
+				rm -f nvim-linux64.tar.gz ; \
+				sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim ; \
+				echo "Neovim installed via pre-compiled binary." ; \
+			else \
+				# Third try: use apt repository (may be outdated)
+				echo "Binary download failed, trying apt repository..." ; \
+				sudo apt-get update && sudo apt-get install -y neovim ; \
+			fi ; \
+		fi ; \
+		# Set up the editor alternatives
+		if type nvim &> /dev/null; then \
+			NVIM_PATH=$(which nvim) ; \
+			sudo update-alternatives --install /usr/bin/vi vi "$${NVIM_PATH}" 110 ; \
+			sudo update-alternatives --install /usr/bin/vim vim "$${NVIM_PATH}" 110 ; \
+			sudo update-alternatives --install /usr/bin/editor editor "$${NVIM_PATH}" 110 ; \
+			# Create aliases in /usr/local/bin if they don't exist
+			for cmd in ex view vimdiff; do \
+				if ! type "$${cmd}" &> /dev/null; then \
+					echo '#!/bin/sh' | sudo tee "/usr/local/bin/$${cmd}" > /dev/null ; \
+					echo 'exec nvim -c "'"$${cmd}"'" "$$@"' | sudo tee -a "/usr/local/bin/$${cmd}" > /dev/null ; \
+					sudo chmod +x "/usr/local/bin/$${cmd}" ; \
+				fi ; \
+			done ; \
+		fi ; \
 	else \
-		echo "Neovim is already installed."; \
+		echo "Neovim is already installed." ; \
 	fi
 
 update_nvim: install_nvim
