@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_nf install_tf install_s3mount install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv install_nodejs install_nvim update_nvim install_aws install_vscode restart_shell
 
 update_gitconfig:
 	git config --global core.editor "nvim"
@@ -88,14 +88,6 @@ install_pyenv: install_plugins
 		"$${HOME}/.pyenv/shims/pip" install --upgrade pip setuptools virtualenv wheel;
 	echo "pyenv with Python 3.11.4 installed and configured globally."
 
-update_pyenv: install_pyenv
-	if [ -f "$${HOME}/Pipfile" ]; then \
-		cat "$${HOME}/Pipfile" > "$${HOME}/Pipfile.bak"; \
-	else \
-		echo "No existing Pipfile file found."; \
-	fi; \
-	cp Pipfile "$${HOME}/Pipfile"
-
 install_nodejs:
 	if ! command -v node &> /dev/null; then \
 		wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz; \
@@ -145,35 +137,6 @@ install_aws:
 		echo "awscli is already installed."; \
 	fi
 
-
-install_nf:
-	if ! command -v nextflow > /dev/null 2>&1; then \
-		curl -s https://get.nextflow.io | bash; \
-		chmod +x nextflow; \
-		sudo mv nextflow /usr/bin/nextflow; \
-	else \
-		echo "nextflow is already installed."; \
-	fi
-
-install_tf:
-	if ! command -v terraform > /dev/null 2>&1; then \
-		wget https://releases.hashicorp.com/terraform/1.6.0/terraform_1.6.0_linux_amd64.zip; \
-			unzip terraform_1.6.0_linux_amd64.zip; \
-			sudo mv terraform /usr/local/bin/; \
-			rm terraform_1.6.0_linux_amd64.zip; \
-	else \
-		echo "terraform is already installed."; \
-	fi
-
-
-install_s3mount:
-	if ! command -v mount-s3 &> /dev/null; then \
-		wget https://s3.amazonaws.com/mountpoint-s3-release/latest/x86_64/mount-s3.deb; \
-		sudo apt-get install ./mount-s3.deb; \
-		rm mount-s3.deb; \
-	else \
-		echo "s3-mountpoint is already installed." ; \
-	fi
 
 install_vscode:
 	if ! command -v code &> /dev/null; then \
