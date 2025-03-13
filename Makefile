@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_docker install_nf install_tf install_s3mount install_vscode restart_shell
+all: update_gitconfig update_zshrc install_oh_my_zsh install_plugins setup_rsa install_pyenv update_pyenv install_nodejs install_nvim update_nvim install_aws install_nf install_tf install_s3mount install_vscode restart_shell
 
 update_gitconfig:
 	git config --global core.editor "nvim"
@@ -145,16 +145,6 @@ install_aws:
 		echo "awscli is already installed."; \
 	fi
 
-install_docker:
-	# Add Docker's official GPG key:
-	sudo install -m 0755 -d /etc/apt/keyrings
-	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-	sudo chmod a+r /etc/apt/keyrings/docker.asc
-	echo "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-		$$(. /etc/os-release && echo "$$VERSION_CODENAME") stable" | \
-		sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	sudo apt-get update
-	sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 install_nf:
 	if ! command -v nextflow > /dev/null 2>&1; then \
