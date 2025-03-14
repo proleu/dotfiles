@@ -138,28 +138,34 @@ install-python-env: install-plugins
             
             # Check if pyenv configuration already exists to avoid duplication
             if ! grep -q "PYENV_ROOT" "$rc_file"; then
-                # Add pyenv configuration
-                echo '' >> "$rc_file"
-                echo '# pyenv configuration' >> "$rc_file"
-                echo 'export PYENV_ROOT="$HOME/.pyenv"' >> "$rc_file"
-                echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> "$rc_file"
+                # Add pyenv configuration with simpler quote handling
+                cat << 'EOT' >> "$rc_file"
+
+# pyenv configuration
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+EOT
                 # Add pyenv init but make it lower priority than virtualenvs
                 if [[ "$shell_type" == "zsh" ]]; then
-                    echo '# Initialize pyenv but ensure it does not override active virtualenvs' >> "$rc_file"
-                    echo 'if [ -z "$VIRTUAL_ENV" ]; then' >> "$rc_file"
-                    echo '  eval "$(pyenv init - zsh)"' >> "$rc_file"
-                    echo 'else' >> "$rc_file"
-                    echo '  # When in virtualenv, add pyenv but don"'"'"'t let it take over PATH" >> "$rc_file"
-                    echo '  PATH="${VIRTUAL_ENV}/bin:${PATH}"' >> "$rc_file"
-                    echo 'fi' >> "$rc_file"
+                    cat << 'EOT' >> "$rc_file"
+# Initialize pyenv but ensure it does not override active virtualenvs
+if [ -z "$VIRTUAL_ENV" ]; then
+  eval "$(pyenv init - zsh)"
+else
+  # When in virtualenv, add pyenv but don't let it take over PATH
+  PATH="${VIRTUAL_ENV}/bin:${PATH}"
+fi
+EOT
                 else
-                    echo '# Initialize pyenv but ensure it does not override active virtualenvs' >> "$rc_file"
-                    echo 'if [ -z "$VIRTUAL_ENV" ]; then' >> "$rc_file"
-                    echo '  eval "$(pyenv init - bash)"' >> "$rc_file"
-                    echo 'else' >> "$rc_file"
-                    echo '  # When in virtualenv, add pyenv but don"'"'"'t let it take over PATH" >> "$rc_file"
-                    echo '  PATH="${VIRTUAL_ENV}/bin:${PATH}"' >> "$rc_file"
-                    echo 'fi' >> "$rc_file"
+                    cat << 'EOT' >> "$rc_file"
+# Initialize pyenv but ensure it does not override active virtualenvs
+if [ -z "$VIRTUAL_ENV" ]; then
+  eval "$(pyenv init - bash)"
+else
+  # When in virtualenv, add pyenv but don't let it take over PATH
+  PATH="${VIRTUAL_ENV}/bin:${PATH}"
+fi
+EOT
                 fi
                 
                 echo "Updated $rc_file with pyenv configuration"
