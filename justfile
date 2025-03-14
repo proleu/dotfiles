@@ -143,10 +143,23 @@ install-python-env: install-plugins
                 echo '# pyenv configuration' >> "$rc_file"
                 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> "$rc_file"
                 echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> "$rc_file"
+                # Add pyenv init but make it lower priority than virtualenvs
                 if [[ "$shell_type" == "zsh" ]]; then
-                    echo 'eval "$(pyenv init - zsh)"' >> "$rc_file"
+                    echo '# Initialize pyenv but ensure it does not override active virtualenvs' >> "$rc_file"
+                    echo 'if [ -z "$VIRTUAL_ENV" ]; then' >> "$rc_file"
+                    echo '  eval "$(pyenv init - zsh)"' >> "$rc_file"
+                    echo 'else' >> "$rc_file"
+                    echo '  # When in virtualenv, add pyenv but don"'"'"'t let it take over PATH" >> "$rc_file"
+                    echo '  PATH="${VIRTUAL_ENV}/bin:${PATH}"' >> "$rc_file"
+                    echo 'fi' >> "$rc_file"
                 else
-                    echo 'eval "$(pyenv init - bash)"' >> "$rc_file"
+                    echo '# Initialize pyenv but ensure it does not override active virtualenvs' >> "$rc_file"
+                    echo 'if [ -z "$VIRTUAL_ENV" ]; then' >> "$rc_file"
+                    echo '  eval "$(pyenv init - bash)"' >> "$rc_file"
+                    echo 'else' >> "$rc_file"
+                    echo '  # When in virtualenv, add pyenv but don"'"'"'t let it take over PATH" >> "$rc_file"
+                    echo '  PATH="${VIRTUAL_ENV}/bin:${PATH}"' >> "$rc_file"
+                    echo 'fi' >> "$rc_file"
                 fi
                 
                 echo "Updated $rc_file with pyenv configuration"
@@ -359,12 +372,18 @@ link-python-config:
         mkdir -p "$USER_VENV"
         uv venv -p 3.11 "$USER_VENV" || echo "Failed to create user venv, continuing anyway..."
         
-        # Install essential packages in the user venv
-        echo "Installing essential packages in user environment..."
-        if [ -f "${USER_VENV}/bin/pip" ]; then
+        # Ensure pip is properly installed and up to date in the venv
+        echo "Setting up pip in the user environment..."
+        if [ -f "${USER_VENV}/bin/python" ]; then
+            # Use the venv's Python to ensure we're installing pip correctly
+            "${USER_VENV}/bin/python" -m ensurepip --upgrade || echo "Failed to ensure pip, continuing anyway..."
+            "${USER_VENV}/bin/python" -m pip install --upgrade pip || echo "Failed to upgrade pip, continuing anyway..."
+            
+            # Install essential packages in the user venv
+            echo "Installing essential packages in user environment..."
             "${USER_VENV}/bin/pip" install wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
         else
-            echo "Failed to find pip in user venv, installing in user space instead..."
+            echo "Failed to find python in user venv, installing in user space instead..."
             pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
         fi
         

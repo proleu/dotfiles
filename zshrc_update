@@ -23,18 +23,32 @@ if [ -z "$VIRTUAL_ENV" ] && [ -f "$HOME/.local/bin/activate-pipenv-global" ]; th
     source "$HOME/.local/bin/activate-pipenv-global"
 fi
 
-# Auto-activate pipenv shell if Pipfile exists
+# Don't auto-activate pipenv in home directory since it would conflict with global env
 function auto_pipenv_shell() {
+    # Skip activation in home directory
+    if [[ "$PWD" == "$HOME" ]] || [[ "$PWD" == "$HOME/"* && "$PWD" != "$HOME/dotfiles" ]]; then
+        return
+    fi
+    
     if [ -f "Pipfile" ]; then
         if [ "$PIPENV_ACTIVE" != "1" ]; then
             echo "Pipfile detected, activating pipenv shell..."
-            pipenv shell
+            # Use PIPENV_IGNORE_VIRTUALENVS to ensure we create a proper project venv
+            PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell
         fi
     fi
 }
 
 # Add the auto-activate function to directory change hook
 chpwd_functions=(${chpwd_functions[@]} "auto_pipenv_shell")
+
+# Ensure virtualenv/pipenv environment takes precedence over pyenv shims
+if [ -n "$VIRTUAL_ENV" ]; then
+    # Move VIRTUAL_ENV/bin to front of PATH to override pyenv
+    PATH="${VIRTUAL_ENV}/bin:${PATH}"
+    # Rehash to update command paths
+    hash -r 2>/dev/null || true
+fi
 
 # History
 setopt histignorealldups sharehistory
