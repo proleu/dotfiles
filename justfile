@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env update-pyenv install-nodejs install-nvim update-nvim install-aws install-vscode restart-shell
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env update-pyenv install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
 
 # Update Git configuration
 update-gitconfig:
@@ -290,6 +290,32 @@ install-vscode:
         sudo apt install code -y
     else
         echo "VS Code is already installed."
+    fi
+
+# Link Claude config file
+link-claude-config:
+    #!/bin/bash
+    echo "Setting up Claude configuration..."
+    # Create ~/.claude directory if it doesn't exist
+    mkdir -p "${HOME}/.claude"
+    
+    # Check if file already exists
+    if [ -f "${HOME}/.claude/claude.md" ]; then
+        # If it's already a symlink to our file, do nothing
+        if [ -L "${HOME}/.claude/claude.md" ] && [ "$(readlink "${HOME}/.claude/claude.md")" == "${PWD}/CLAUDE.md" ]; then
+            echo "Claude config is already linked correctly."
+        else
+            # Back up existing file
+            echo "Backing up existing Claude config..."
+            mv "${HOME}/.claude/claude.md" "${HOME}/.claude/claude.md.bak.$(date +%s)"
+            # Create symlink
+            ln -sf "${PWD}/CLAUDE.md" "${HOME}/.claude/claude.md"
+            echo "Claude config has been linked."
+        fi
+    else
+        # Create symlink if no file exists
+        ln -sf "${PWD}/CLAUDE.md" "${HOME}/.claude/claude.md"
+        echo "Claude config has been linked."
     fi
 
 # Restart shell prompt
