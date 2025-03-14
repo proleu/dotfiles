@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env update-pyenv install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
 
 # Update Git configuration
 update-gitconfig:
@@ -97,8 +97,15 @@ install-python-env: install-plugins
     uv tool install pipx || echo "pipx installation failed, continuing anyway"
     uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
     
+    # Essential Python packages
+    echo "Installing essential Python packages..."
+    uv tool install wheel || echo "wheel installation failed, continuing anyway"
+    uv tool install setuptools || echo "setuptools installation failed, continuing anyway"
+    uv tool install virtualenv || echo "virtualenv installation failed, continuing anyway"
+    
     # Additional tools directly with uv tool install
     echo "Installing additional tools with uv..."
+    uv tool install awscli || echo "awscli installation failed, continuing anyway" 
     uv tool install cruft || echo "cruft installation failed, continuing anyway" 
     uv tool install dive-bin || echo "dive-bin installation failed, continuing anyway"
     uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
@@ -167,18 +174,6 @@ install-python-env: install-plugins
     fi
     
     echo "Python environment setup completed"
-
-# Update pyenv configuration
-update-pyenv: install-python-env
-    #!/bin/bash
-    if [ -f "${HOME}/Pipfile" ]; then
-        cat "${HOME}/Pipfile" > "${HOME}/Pipfile.bak"
-    else
-        echo "No existing Pipfile file found."
-    fi
-    # Use absolute path to ensure file is found regardless of current directory
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    cp "${SCRIPT_DIR}/Pipfile" "${HOME}/Pipfile"
 
 # Install Node.js
 install-nodejs:
@@ -264,16 +259,16 @@ update-nvim: install-nvim
     nvim -c "PlugInstall" -c "qa" || echo "PlugInstall failed, continuing anyway"
     nvim -c "PlugUpdate" -c "qa" || echo "PlugUpdate failed, continuing anyway"
 
-# Install AWS CLI
+# Install AWS CLI (deprecated - now installed via uv)
 install-aws:
     #!/bin/bash
-    if ! type aws > /dev/null 2>&1; then
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
-        sudo ./aws/install
-        rm -rf aws
+    # AWS CLI is now installed via uv tool install awscli
+    echo "AWS CLI installation is now handled by uv in the install-python-env target."
+    # Verify if AWS CLI is available
+    if type aws > /dev/null 2>&1; then
+        echo "AWS CLI is already installed: $(aws --version)"
     else
-        echo "awscli is already installed."
+        echo "AWS CLI is not found. If needed, run 'uv tool install awscli' manually."
     fi
 
 # Install VS Code
