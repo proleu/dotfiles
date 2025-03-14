@@ -104,7 +104,6 @@ install-python-env: install-plugins
     uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
     uv tool install just-bin || echo "just-bin installation failed, continuing anyway"
     uv tool install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
-    uv tool install npm || echo "npm installation failed, continuing anyway"
     
     # Note: setuptools, wheel, virtualenv, and awscli will be installed from pyproject.toml
     
@@ -175,22 +174,25 @@ install-python-env: install-plugins
 # Install Node.js
 install-nodejs:
     #!/bin/bash
-    if ! type node &> /dev/null; then
-        # First check if npm is installed via uv
-        if type npm &> /dev/null; then
-            echo "npm is already installed via uv. Using it to install Node.js..."
-            npm install -g n
-            n stable
+    # Check for both Node.js and npm
+    if ! type node &> /dev/null || ! type npm &> /dev/null; then
+        echo "Installing Node.js and npm from binary distribution..."
+        # Use the latest LTS version
+        NODE_VERSION="v18.18.0"
+        wget https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.xz
+        tar -xf node-${NODE_VERSION}-linux-x64.tar.xz
+        sudo cp -r node-${NODE_VERSION}-linux-x64/bin/* /usr/local/bin/
+        sudo cp -r node-${NODE_VERSION}-linux-x64/lib/* /usr/local/lib/
+        rm -rf node-${NODE_VERSION}-linux-x64 node-${NODE_VERSION}-linux-x64.tar.xz
+        
+        # Verify installation
+        if type node &> /dev/null && type npm &> /dev/null; then
+            echo "Node.js $(node --version) and npm $(npm --version) installed successfully"
         else
-            # Fallback to manual installation
-            echo "Installing Node.js from binary distribution..."
-            wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz
-            tar -xf node-v18.18.0-linux-x64.tar.xz
-            sudo cp node-v18.18.0-linux-x64/bin/* /usr/bin/
-            rm -rf node-v18.18.0-linux-x64 node-v18.18.0-linux-x64.tar.xz
+            echo "Node.js or npm installation may have failed, please check manually"
         fi
     else
-        echo "Node.js is already installed: $(node --version)"
+        echo "Node.js $(node --version) and npm $(npm --version) are already installed"
     fi
 
 # Install Neovim
