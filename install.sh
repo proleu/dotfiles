@@ -12,17 +12,22 @@ required_packages=(
   libbz2-dev
   libffi-dev
   liblzma-dev
+  libncursesw5-dev
   libreadline-dev
   libsqlite3-dev
   libssl-dev
+  libxmlsec1-dev
+  libxml2-dev
   openjdk-11-jdk
   openvpn
   python3-dev
+  tk-dev
   tmux
   tree
   unzip
   wget
   xclip
+  xz-utils
   zlib1g-dev
   zsh
 )
