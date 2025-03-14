@@ -18,6 +18,11 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# Auto-activate global Python environment if not already in a virtual environment
+if [ -z "$VIRTUAL_ENV" ] && [ -f "$HOME/.local/bin/activate-pipenv-global" ]; then
+    source "$HOME/.local/bin/activate-pipenv-global"
+fi
+
 # Auto-activate pipenv shell if Pipfile exists
 function auto_pipenv_shell() {
     if [ -f "Pipfile" ]; then
