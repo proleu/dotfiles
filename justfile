@@ -250,9 +250,14 @@ update-nvim: install-nvim
     else
         echo "No existing init.vim file found."
     fi
-    # Use absolute path to ensure file is found regardless of current directory
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    cp "${SCRIPT_DIR}/init.vim" "${HOME}/.config/nvim/init.vim"
+    # Use PWD to ensure file is found regardless of current directory
+    if [ -f "init.vim" ]; then
+        cp "init.vim" "${HOME}/.config/nvim/init.vim"
+    elif [ -f "${PWD}/init.vim" ]; then
+        cp "${PWD}/init.vim" "${HOME}/.config/nvim/init.vim"
+    else
+        echo "Warning: Could not find init.vim in current directory. Skipping."
+    fi
     
     # Install vim-plug if not already installed
     if [ ! -f "${HOME}/.local/share/nvim/site/autoload/plug.vim" ]; then
@@ -346,8 +351,17 @@ link-python-config:
     # Install essential packages in user space
     echo "Installing essential Python packages..."
     if type uv > /dev/null 2>&1; then
-        # Install packages with uv using --user flag
-        uv pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+        # Create a temporary venv to install packages
+        echo "Creating temporary venv for package installation..."
+        TEMP_VENV=$(mktemp -d)
+        uv venv -p 3.11 "$TEMP_VENV" || echo "Failed to create temp venv, continuing anyway..."
+        
+        # Install packages with regular pip using --user flag (uv pip doesn't support --user)
+        echo "Installing packages for user..."
+        pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+        
+        # Clean up
+        rm -rf "$TEMP_VENV"
     else
         # Fallback to regular pip if uv is not available
         pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
