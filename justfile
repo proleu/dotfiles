@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-pyenv update-pyenv install-nodejs install-nvim update-nvim install-aws install-vscode restart-shell
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env update-pyenv install-nodejs install-nvim update-nvim install-aws install-vscode restart-shell
 
 # Update Git configuration
 update-gitconfig:
@@ -65,73 +65,102 @@ setup-rsa:
         ssh-keygen -f "${HOME}/.ssh/id_rsa" -t rsa -N ''
     fi
 
-# Install pyenv
-install-pyenv: install-plugins
+# Install Python environment with uv and pyenv
+install-python-env: install-plugins
     #!/bin/bash
     # Remove any existing Conda installations first
     if [ -d "${HOME}/conda" ] || [ -d "${HOME}/miniconda3" ] || [ -d "${HOME}/anaconda3" ] || [ -d "opt/conda" ]; then
         echo "Removing existing Conda installations..."
         rm -rf "${HOME}/conda" "${HOME}/miniconda3" "${HOME}/anaconda3" "/opt/conda"
     fi
-    # Install pyenv
-    echo "Installing pyenv..."
-    rm -rf "${HOME}/.pyenv"
-    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-    # Append pyenv init to .zshrc in a safe manner
-    echo 'export PYENV_ROOT="${HOME}/.pyenv"' >> "${HOME}/.zshrc"
-    echo '[ -d "${PYENV_ROOT}/bin" ] && export PATH="${PYENV_ROOT}/bin:${PATH}"' >> "${HOME}/.zshrc"
-    echo 'eval "$(pyenv init -)"' >> "${HOME}/.zshrc"
-    echo 'eval "$(pyenv virtualenv-init -)"' >> "${HOME}/.zshrc"
-    # Do it to .bashrc as well, just in case
-    echo 'export PYENV_ROOT="${HOME}/.pyenv"' >> "${HOME}/.bashrc"
-    echo '[ -d "${PYENV_ROOT}/bin" ] && export PATH="${PYENV_ROOT}/bin:${PATH}"' >> "${HOME}/.bashrc"
-    echo 'eval "$(pyenv init -)"' >> "${HOME}/.bashrc"
-    echo 'eval "$(pyenv virtualenv-init -)"' >> "${HOME}/.bashrc"
     
-    # Source the updated environment variables
-    export PYENV_ROOT="${HOME}/.pyenv"
-    export PATH="${PYENV_ROOT}/bin:${PATH}"
-    
-    # Install Python 3.11.4 and configure it globally with error handling
-    echo "Installing Python 3.11.4 using pyenv..."
-    
-    # Check if pyenv is installed correctly
-    if [ -x "${HOME}/.pyenv/bin/pyenv" ]; then
-        # Initialize pyenv
-        "${HOME}/.pyenv/bin/pyenv" init - || echo "pyenv init failed, continuing anyway"
-        "${HOME}/.pyenv/bin/pyenv" virtualenv-init - || echo "pyenv virtualenv-init failed, continuing anyway"
-        
-        # Install Python 3.11.4
-        "${HOME}/.pyenv/bin/pyenv" install 3.11.4 || echo "Python installation failed, continuing anyway"
-        "${HOME}/.pyenv/bin/pyenv" global 3.11.4 || echo "Setting global Python version failed, continuing anyway"
-        "${HOME}/.pyenv/bin/pyenv" rehash || echo "pyenv rehash failed, continuing anyway"
-        
-        # Install tools
-        if [ -x "${HOME}/.pyenv/shims/python3" ]; then
-            "${HOME}/.pyenv/shims/python3" -m pip install --user pipx || echo "pipx installation failed, continuing anyway"
-            "${HOME}/.pyenv/shims/python3" -m pipx ensurepath || echo "pipx ensurepath failed, continuing anyway"
-            
-            # Only install pipenv if pipx is available
-            if [ -x "${HOME}/.local/bin/pipx" ]; then
-                "${HOME}/.local/bin/pipx" install pipenv==2023.6.12 || echo "pipenv installation failed, continuing anyway"
-                "${HOME}/.local/bin/pipx" install cruft dive-bin hadolint-bin just-bin lazydocker-bin || echo "tools installation failed, continuing anyway"
-            else
-                echo "pipx not found, skipping pipenv and tools installation"
-            fi
-            
-            # Upgrade pip and core tools
-            "${HOME}/.pyenv/shims/pip" install --upgrade pip setuptools virtualenv wheel || echo "pip upgrade failed, continuing anyway"
-        else
-            echo "Python shim not found, skipping pip installations"
-        fi
-    else
-        echo "pyenv binary not found, skipping Python installation"
+    # Remove any existing pyenv installations if present
+    if [ -d "${HOME}/.pyenv" ]; then
+        echo "Removing existing pyenv installation..."
+        rm -rf "${HOME}/.pyenv"
     fi
     
-    echo "pyenv setup completed"
+    # Install uv
+    echo "Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    # Ensure uv is in the PATH for the current session
+    export PATH="${HOME}/.cargo/bin:${PATH}"
+    
+    # Install Python 3.11.4 using uv
+    echo "Installing Python 3.11.4 using uv..."
+    uv python install 3.11.4 || echo "Python installation failed, continuing anyway"
+    
+    # Install tools using uv
+    echo "Installing Python tools..."
+    uv tool install pipx || echo "pipx installation failed, continuing anyway"
+    uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
+    uv tool install cruft dive-bin hadolint-bin just-bin lazydocker-bin || echo "tools installation failed, continuing anyway"
+    
+    # Install pyenv (for compatibility with pipenv projects)
+    echo "Installing pyenv for compatibility with pipenv projects..."
+    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+    
+    # Process shell configuration files
+    for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
+        if [ -f "$rc_file" ]; then
+            # Create backup of the rc file
+            cp "$rc_file" "${rc_file}.bak.$(date +%s)"
+            
+            # Check shell type
+            shell_type="bash"
+            if [[ "$rc_file" == *".zshrc" ]]; then
+                shell_type="zsh"
+            fi
+            
+            # Add uv to PATH if it doesn't exist
+            if ! grep -q "\.cargo/bin" "$rc_file"; then
+                echo '' >> "$rc_file"
+                echo '# uv installation' >> "$rc_file"
+                echo 'export PATH="$HOME/.cargo/bin:$PATH"  # For uv' >> "$rc_file"
+            fi
+            
+            # Add ~/.local/bin to PATH if it doesn't exist
+            if ! grep -q "\.local/bin" "$rc_file"; then
+                echo 'export PATH="$HOME/.local/bin:$PATH"  # For uv tools and pipx' >> "$rc_file"
+            fi
+            
+            # Check if pyenv configuration already exists to avoid duplication
+            if ! grep -q "PYENV_ROOT" "$rc_file"; then
+                # Add pyenv configuration
+                echo '' >> "$rc_file"
+                echo '# pyenv configuration' >> "$rc_file"
+                echo 'export PYENV_ROOT="$HOME/.pyenv"' >> "$rc_file"
+                echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> "$rc_file"
+                if [[ "$shell_type" == "zsh" ]]; then
+                    echo 'eval "$(pyenv init - zsh)"' >> "$rc_file"
+                else
+                    echo 'eval "$(pyenv init - bash)"' >> "$rc_file"
+                fi
+                
+                echo "Updated $rc_file with pyenv configuration"
+            else
+                echo "$rc_file already contains pyenv configuration"
+            fi
+        fi
+    done
+    
+    # Install Python 3.11.4 with pyenv for pipenv compatibility
+    if [ -x "${HOME}/.pyenv/bin/pyenv" ]; then
+        "${HOME}/.pyenv/bin/pyenv" install 3.11.4 || echo "Python installation with pyenv failed, continuing anyway"
+    else
+        echo "pyenv binary not found, skipping Python installation with pyenv"
+    fi
+    
+    # Ensure pipx is in the PATH
+    if [ -x "${HOME}/.local/bin/pipx" ]; then
+        "${HOME}/.local/bin/pipx" ensurepath || echo "pipx ensurepath failed, continuing anyway"
+    fi
+    
+    echo "Python environment setup completed"
 
 # Update pyenv configuration
-update-pyenv: install-pyenv
+update-pyenv: install-python-env
     #!/bin/bash
     if [ -f "${HOME}/Pipfile" ]; then
         cat "${HOME}/Pipfile" > "${HOME}/Pipfile.bak"
