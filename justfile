@@ -93,20 +93,17 @@ install-python-env: install-plugins
     
     # Install tools using uv
     echo "Installing Python tools..."
+    # Core tools
     uv tool install pipx || echo "pipx installation failed, continuing anyway"
     uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
     
-    # Install additional tools with pipx after it's installed
-    if [ -x "${HOME}/.local/bin/pipx" ]; then
-        echo "Installing additional tools with pipx..."
-        "${HOME}/.local/bin/pipx" install cruft || echo "cruft installation failed, continuing anyway" 
-        "${HOME}/.local/bin/pipx" install dive-bin || echo "dive-bin installation failed, continuing anyway"
-        "${HOME}/.local/bin/pipx" install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
-        "${HOME}/.local/bin/pipx" install just-bin || echo "just-bin installation failed, continuing anyway"
-        "${HOME}/.local/bin/pipx" install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
-    else
-        echo "pipx not found, skipping additional tools installation"
-    fi
+    # Additional tools directly with uv tool install
+    echo "Installing additional tools with uv..."
+    uv tool install cruft || echo "cruft installation failed, continuing anyway" 
+    uv tool install dive-bin || echo "dive-bin installation failed, continuing anyway"
+    uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
+    uv tool install just-bin || echo "just-bin installation failed, continuing anyway"
+    uv tool install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
@@ -163,9 +160,10 @@ install-python-env: install-plugins
         echo "pyenv binary not found, skipping Python installation with pyenv"
     fi
     
-    # Ensure pipx is in the PATH
-    if [ -x "${HOME}/.local/bin/pipx" ]; then
-        "${HOME}/.local/bin/pipx" ensurepath || echo "pipx ensurepath failed, continuing anyway"
+    # Ensure ~/.local/bin is in PATH for all users
+    if ! grep -q "\.local/bin" "${HOME}/.profile" 2>/dev/null; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.profile"
+        echo "Added ~/.local/bin to PATH in .profile"
     fi
     
     echo "Python environment setup completed"
