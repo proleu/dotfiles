@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=42", "wheel>=0.36.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "user-environment"
+version = "0.1.0"
+description = "User environment basic packages"
+requires-python = ">=3.8"
+dependencies = [
+    "awscli>=1.27.0",
+    "wheel>=0.36.0",
+    "setuptools>=42",
+    "virtualenv>=20.0.0",
+]
+
+[tool.black]
+line-length = 150

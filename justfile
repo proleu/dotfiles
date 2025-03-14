@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
 
 # Update Git configuration
 update-gitconfig:
@@ -97,21 +97,16 @@ install-python-env: install-plugins
     uv tool install pipx || echo "pipx installation failed, continuing anyway"
     uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
     
-    # Essential Python packages
-    echo "Installing essential Python packages..."
-    uv tool install wheel || echo "wheel installation failed, continuing anyway"
-    uv tool install setuptools || echo "setuptools installation failed, continuing anyway"
-    uv tool install virtualenv || echo "virtualenv installation failed, continuing anyway"
-    
     # Additional tools directly with uv tool install
     echo "Installing additional tools with uv..."
-    uv tool install awscli || echo "awscli installation failed, continuing anyway" 
     uv tool install cruft || echo "cruft installation failed, continuing anyway" 
     uv tool install dive-bin || echo "dive-bin installation failed, continuing anyway"
     uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
     uv tool install just-bin || echo "just-bin installation failed, continuing anyway"
     uv tool install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
     uv tool install npm || echo "npm installation failed, continuing anyway"
+    
+    # Note: setuptools, wheel, virtualenv, and awscli will be installed from pyproject.toml
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
@@ -269,16 +264,38 @@ update-nvim: install-nvim
     nvim -c "PlugInstall" -c "qa" || echo "PlugInstall failed, continuing anyway"
     nvim -c "PlugUpdate" -c "qa" || echo "PlugUpdate failed, continuing anyway"
 
-# Install AWS CLI (deprecated - now installed via uv)
+# Install AWS CLI v2
 install-aws:
     #!/bin/bash
-    # AWS CLI is now installed via uv tool install awscli
-    echo "AWS CLI installation is now handled by uv in the install-python-env target."
-    # Verify if AWS CLI is available
+    # Check if AWS CLI is installed and its version
     if type aws > /dev/null 2>&1; then
-        echo "AWS CLI is already installed: $(aws --version)"
+        AWS_VERSION=$(aws --version 2>&1)
+        if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
+            echo "AWS CLI v2 is already installed: $AWS_VERSION"
+        else
+            echo "Removing non-v2 AWS CLI installation..."
+            # If it's installed via apt, remove it
+            if dpkg -l | grep -q awscli; then
+                sudo apt remove -y awscli
+            fi
+            # If it's installed via pip or uv, remove it
+            pip uninstall -y awscli 2>/dev/null || true
+            # Install AWS CLI v2
+            echo "Installing AWS CLI v2..."
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -q awscliv2.zip
+            sudo ./aws/install
+            rm -rf aws awscliv2.zip
+            echo "AWS CLI v2 has been installed"
+        fi
     else
-        echo "AWS CLI is not found. If needed, run 'uv tool install awscli' manually."
+        # AWS CLI is not installed, install v2
+        echo "Installing AWS CLI v2..."
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip -q awscliv2.zip
+        sudo ./aws/install
+        rm -rf aws awscliv2.zip
+        echo "AWS CLI v2 has been installed"
     fi
 
 # Install VS Code
@@ -294,6 +311,53 @@ install-vscode:
     else
         echo "VS Code is already installed."
     fi
+
+# Link Python config files
+link-python-config:
+    #!/bin/bash
+    echo "Setting up Python configuration files..."
+    
+    # Link pyproject.toml
+    if [ -f "${HOME}/pyproject.toml" ]; then
+        # If it's already a symlink to our file, do nothing
+        if [ -L "${HOME}/pyproject.toml" ] && [ "$(readlink "${HOME}/pyproject.toml")" == "${PWD}/pyproject.toml" ]; then
+            echo "pyproject.toml is already linked correctly."
+        else
+            # Back up existing file
+            echo "Backing up existing pyproject.toml..."
+            mv "${HOME}/pyproject.toml" "${HOME}/pyproject.toml.bak.$(date +%s)"
+            # Create symlink
+            ln -sf "${PWD}/pyproject.toml" "${HOME}/pyproject.toml"
+            echo "pyproject.toml has been linked."
+        fi
+    else
+        # Create symlink if no file exists
+        ln -sf "${PWD}/pyproject.toml" "${HOME}/pyproject.toml"
+        echo "pyproject.toml has been linked."
+    fi
+    
+    # Link Pipfile
+    if [ -f "${HOME}/Pipfile" ]; then
+        # If it's already a symlink to our file, do nothing
+        if [ -L "${HOME}/Pipfile" ] && [ "$(readlink "${HOME}/Pipfile")" == "${PWD}/Pipfile" ]; then
+            echo "Pipfile is already linked correctly."
+        else
+            # Back up existing file
+            echo "Backing up existing Pipfile..."
+            mv "${HOME}/Pipfile" "${HOME}/Pipfile.bak.$(date +%s)"
+            # Create symlink
+            ln -sf "${PWD}/Pipfile" "${HOME}/Pipfile"
+            echo "Pipfile has been linked."
+        fi
+    else
+        # Create symlink if no file exists
+        ln -sf "${PWD}/Pipfile" "${HOME}/Pipfile"
+        echo "Pipfile has been linked."
+    fi
+    
+    # Install dependencies from pyproject.toml
+    echo "Installing dependencies from pyproject.toml..."
+    cd "${HOME}" && uv pip install -e . || echo "Failed to install dependencies from pyproject.toml, continuing anyway..."
 
 # Link Claude config file
 link-claude-config:
