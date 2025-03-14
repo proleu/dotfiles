@@ -18,6 +18,19 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# Auto-activate pipenv shell if Pipfile exists
+function auto_pipenv_shell() {
+    if [ -f "Pipfile" ]; then
+        if [ "$PIPENV_ACTIVE" != "1" ]; then
+            echo "Pipfile detected, activating pipenv shell..."
+            pipenv shell
+        fi
+    fi
+}
+
+# Add the auto-activate function to directory change hook
+chpwd_functions=(${chpwd_functions[@]} "auto_pipenv_shell")
+
 # History
 setopt histignorealldups sharehistory
 HISTSIZE=SAVEHIST=10000

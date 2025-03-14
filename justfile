@@ -87,9 +87,9 @@ install-python-env: install-plugins
     # Ensure uv is in the PATH for the current session
     export PATH="${HOME}/.cargo/bin:${PATH}"
     
-    # Install Python 3.11.4 using uv
+    # Install Python 3.11.4 using uv (force installation even if system Python exists)
     echo "Installing Python 3.11.4 using uv..."
-    uv python install 3.11.4 || echo "Python installation failed, continuing anyway"
+    uv python install --force 3.11.4 || echo "Python installation failed, continuing anyway"
     
     # Install tools using uv
     echo "Installing Python tools..."
@@ -110,7 +110,8 @@ install-python-env: install-plugins
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
-    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+    # Use the more stable installation URL (pyenv.run)
+    curl -L https://pyenv.run | bash
     
     # Process shell configuration files
     for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
@@ -279,7 +280,11 @@ install-aws:
                 sudo apt remove -y awscli
             fi
             # If it's installed via pip or uv, remove it
-            pip uninstall -y awscli 2>/dev/null || true
+            if type uv > /dev/null 2>&1; then
+                uv pip uninstall -y awscli 2>/dev/null || true
+            else
+                pip uninstall -y awscli 2>/dev/null || true
+            fi
             # Install AWS CLI v2
             echo "Installing AWS CLI v2..."
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -317,24 +322,7 @@ link-python-config:
     #!/bin/bash
     echo "Setting up Python configuration files..."
     
-    # Link pyproject.toml
-    if [ -f "${HOME}/pyproject.toml" ]; then
-        # If it's already a symlink to our file, do nothing
-        if [ -L "${HOME}/pyproject.toml" ] && [ "$(readlink "${HOME}/pyproject.toml")" == "${PWD}/pyproject.toml" ]; then
-            echo "pyproject.toml is already linked correctly."
-        else
-            # Back up existing file
-            echo "Backing up existing pyproject.toml..."
-            mv "${HOME}/pyproject.toml" "${HOME}/pyproject.toml.bak.$(date +%s)"
-            # Create symlink
-            ln -sf "${PWD}/pyproject.toml" "${HOME}/pyproject.toml"
-            echo "pyproject.toml has been linked."
-        fi
-    else
-        # Create symlink if no file exists
-        ln -sf "${PWD}/pyproject.toml" "${HOME}/pyproject.toml"
-        echo "pyproject.toml has been linked."
-    fi
+    # We're not using pyproject.toml anymore, installing packages directly
     
     # Link Pipfile
     if [ -f "${HOME}/Pipfile" ]; then
@@ -355,9 +343,15 @@ link-python-config:
         echo "Pipfile has been linked."
     fi
     
-    # Install dependencies from pyproject.toml
-    echo "Installing dependencies from pyproject.toml..."
-    cd "${HOME}" && uv pip install -e . || echo "Failed to install dependencies from pyproject.toml, continuing anyway..."
+    # Install essential packages in user space
+    echo "Installing essential Python packages..."
+    if type uv > /dev/null 2>&1; then
+        # Install packages with uv using --user flag
+        uv pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+    else
+        # Fallback to regular pip if uv is not available
+        pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+    fi
 
 # Link Claude config file
 link-claude-config:
