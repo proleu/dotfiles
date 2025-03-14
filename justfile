@@ -95,7 +95,17 @@ install-python-env: install-plugins
     echo "Installing Python tools..."
     uv tool install pipx || echo "pipx installation failed, continuing anyway"
     uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
-    uv tool install cruft dive-bin hadolint-bin just-bin lazydocker-bin || echo "tools installation failed, continuing anyway"
+    
+    # Install additional tools with pipx after it's installed
+    if [ -x "${HOME}/.local/bin/pipx" ]; then
+        echo "Installing additional tools with pipx..."
+        "${HOME}/.local/bin/pipx" install cruft || echo "cruft installation failed, continuing anyway" 
+        "${HOME}/.local/bin/pipx" install hadolint || echo "hadolint installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install just || echo "just installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install lazydocker || echo "lazydocker installation failed, continuing anyway"
+    else
+        echo "pipx not found, skipping additional tools installation"
+    fi
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
