@@ -100,9 +100,10 @@ install-python-env: install-plugins
     if [ -x "${HOME}/.local/bin/pipx" ]; then
         echo "Installing additional tools with pipx..."
         "${HOME}/.local/bin/pipx" install cruft || echo "cruft installation failed, continuing anyway" 
-        "${HOME}/.local/bin/pipx" install hadolint || echo "hadolint installation failed, continuing anyway"
-        "${HOME}/.local/bin/pipx" install just || echo "just installation failed, continuing anyway"
-        "${HOME}/.local/bin/pipx" install lazydocker || echo "lazydocker installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install dive-bin || echo "dive-bin installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install just-bin || echo "just-bin installation failed, continuing anyway"
+        "${HOME}/.local/bin/pipx" install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
     else
         echo "pipx not found, skipping additional tools installation"
     fi
