@@ -111,6 +111,7 @@ install-python-env: install-plugins
     uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
     uv tool install just-bin || echo "just-bin installation failed, continuing anyway"
     uv tool install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
+    uv tool install npm || echo "npm installation failed, continuing anyway"
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
@@ -179,12 +180,21 @@ install-python-env: install-plugins
 install-nodejs:
     #!/bin/bash
     if ! type node &> /dev/null; then
-        wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz
-        tar -xf node-v18.18.0-linux-x64.tar.xz
-        sudo cp node-v18.18.0-linux-x64/bin/* /usr/bin/
-        rm -rf node-v18.18.0-linux-x64 node-v18.18.0-linux-x64.tar.xz
+        # First check if npm is installed via uv
+        if type npm &> /dev/null; then
+            echo "npm is already installed via uv. Using it to install Node.js..."
+            npm install -g n
+            n stable
+        else
+            # Fallback to manual installation
+            echo "Installing Node.js from binary distribution..."
+            wget https://nodejs.org/dist/v18.18.0/node-v18.18.0-linux-x64.tar.xz
+            tar -xf node-v18.18.0-linux-x64.tar.xz
+            sudo cp node-v18.18.0-linux-x64/bin/* /usr/bin/
+            rm -rf node-v18.18.0-linux-x64 node-v18.18.0-linux-x64.tar.xz
+        fi
     else
-        echo "Node.js is already installed."
+        echo "Node.js is already installed: $(node --version)"
     fi
 
 # Install Neovim
