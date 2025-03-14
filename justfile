@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install
 
 # Update Git configuration
 update-gitconfig:
@@ -396,3 +396,122 @@ link-claude-config:
 # Restart shell prompt
 restart-shell:
     echo "Please restart your shell for changes to take effect"
+
+# Verify installation
+verify-install:
+    #!/bin/bash
+    echo -e "\n=== Verifying installation and configuration ==="
+    echo -e "\n--- Checking shell configuration ---"
+    SHELLS=0
+    for shell_conf in ~/.zshrc ~/.bashrc ~/.profile ~/.bash_profile; do
+        if [ -f "$shell_conf" ]; then
+            echo "✓ $shell_conf exists"
+            SHELLS=$((SHELLS+1))
+            if grep -q "\.cargo/bin" "$shell_conf"; then
+                echo "  ✓ cargo/bin in PATH"
+            else
+                echo "  ⚠️ cargo/bin NOT in PATH"
+            fi
+            if grep -q "\.local/bin" "$shell_conf"; then
+                echo "  ✓ .local/bin in PATH"
+            else
+                echo "  ⚠️ .local/bin NOT in PATH"
+            fi
+        fi
+    done
+    if [ "$SHELLS" -eq 0 ]; then
+        echo "⚠️ No shell config files found"
+    fi
+    
+    echo -e "\n--- Checking Python installation ---"
+    if command -v uv >/dev/null 2>&1; then
+        echo "✓ uv: $(uv --version 2>&1 | head -n 1)"
+    else
+        echo "⚠️ uv not installed"
+    fi
+    
+    if command -v python3 >/dev/null 2>&1; then
+        echo "✓ python: $(python3 --version)"
+    else
+        echo "⚠️ python not installed"
+    fi
+    
+    if command -v pip >/dev/null 2>&1; then
+        echo "✓ pip: $(pip --version)"
+    else
+        echo "⚠️ pip not installed"
+    fi
+    
+    if command -v pipenv >/dev/null 2>&1; then
+        echo "✓ pipenv: $(pipenv --version)"
+    else
+        echo "⚠️ pipenv not installed"
+    fi
+    
+    if [ -d "${HOME}/.pyenv" ]; then
+        echo "✓ pyenv installed"
+    else
+        echo "⚠️ pyenv not found in ${HOME}/.pyenv"
+    fi
+    
+    echo -e "\n--- Checking core tooling ---"
+    if command -v aws >/dev/null 2>&1; then
+        echo "✓ aws: $(aws --version 2>&1)"
+    else
+        echo "⚠️ aws not installed"
+    fi
+    
+    if command -v git >/dev/null 2>&1; then
+        echo "✓ git: $(git --version)"
+    else
+        echo "⚠️ git not installed"
+    fi
+    
+    if command -v node >/dev/null 2>&1; then
+        echo "✓ node: $(node --version)"
+    else
+        echo "⚠️ node not installed"
+    fi
+    
+    if command -v npm >/dev/null 2>&1; then
+        echo "✓ npm: $(npm --version)"
+    else
+        echo "⚠️ npm not installed"
+    fi
+    
+    if command -v nvim >/dev/null 2>&1; then
+        echo "✓ nvim: $(nvim --version | head -n 1)"
+    else
+        echo "⚠️ nvim not installed"
+    fi
+    
+    echo -e "\n--- Checking additional tools ---"
+    for tool in cruft dive hadolint lazydocker just; do
+        if command -v $tool >/dev/null 2>&1; then
+            echo "✓ $tool installed"
+        else
+            echo "⚠️ $tool not installed"
+        fi
+    done
+    
+    echo -e "\n--- Checking config files ---"
+    if [ -f "${HOME}/Pipfile" ]; then
+        echo "✓ Pipfile linked"
+    else
+        echo "⚠️ Pipfile not linked"
+    fi
+    
+    if [ -f "${HOME}/.config/nvim/init.vim" ]; then
+        echo "✓ Neovim config exists"
+    else
+        echo "⚠️ Neovim config not found"
+    fi
+    
+    if [ -f "${HOME}/.claude/claude.md" ]; then
+        echo "✓ Claude.md linked"
+    else
+        echo "⚠️ Claude.md not linked"
+    fi
+    
+    echo -e "\n=== Verification complete ===\n"
+    echo "For any warnings above, you might want to run the specific target manually or check the logs."
