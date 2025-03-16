@@ -8,14 +8,17 @@ if [ -f "$HOME/.bashrc" ]; then
     done
 fi
 
-# Add uv to PATH if installed
-if [ -d "$HOME/.cargo/bin" ]; then
-    export PATH="$HOME/.cargo/bin:$PATH"
-fi
-
-# Add local bin to PATH for uv tools and pipx
-if [ -d "$HOME/.local/bin" ]; then
-    export PATH="$HOME/.local/bin:$PATH"
+# Add uv path script if it exists
+if [ -f "$HOME/.local/bin/setup_uv_path.sh" ]; then
+    source "$HOME/.local/bin/setup_uv_path.sh"
+else
+    # Fallback path settings if script doesn't exist
+    if [ -d "$HOME/.local/bin" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    if [ -d "$HOME/.cargo/bin" ]; then
+        export PATH="$HOME/.cargo/bin:$PATH"
+    fi
 fi
 
 # Auto-activate global Python environment if not already in a virtual environment

@@ -82,30 +82,65 @@ install-python-env: install-plugins
     
     # Install uv
     echo "Installing uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    # Install to ~/.local/bin to ensure it works across different Ubuntu versions
+    curl -LsSf https://astral.sh/uv/install.sh | DEST=$HOME/.local/bin sh
     
-    # Ensure uv is in the PATH for the current session
-    export PATH="${HOME}/.cargo/bin:${PATH}"
+    # Create a persistent PATH update script that we can source immediately
+    echo "Setting up path for uv..."
+    UV_PATH_SCRIPT="${HOME}/.local/bin/setup_uv_path.sh"
     
-    # Install Python 3.11.4 using uv (force installation even if system Python exists)
-    echo "Installing Python 3.11.4 using uv..."
-    uv python install --force 3.11.4 || echo "Python installation failed, continuing anyway"
+    cat << EOT > "$UV_PATH_SCRIPT"
+#!/bin/bash
+# Add uv installation directories to PATH
+export PATH="\$HOME/.local/bin:\$PATH"
+EOT
+    chmod +x "$UV_PATH_SCRIPT"
     
-    # Install tools using uv
-    echo "Installing Python tools..."
-    # Core tools
-    uv tool install pipx || echo "pipx installation failed, continuing anyway"
-    uv tool install pipenv || echo "pipenv installation failed, continuing anyway"
+    # Source the path script for the current session
+    source "$UV_PATH_SCRIPT"
     
-    # Additional tools directly with uv tool install
-    echo "Installing additional tools with uv..."
-    uv tool install cruft || echo "cruft installation failed, continuing anyway" 
-    uv tool install dive-bin || echo "dive-bin installation failed, continuing anyway"
-    uv tool install hadolint-bin || echo "hadolint-bin installation failed, continuing anyway"
-    uv tool install just-bin || echo "just-bin installation failed, continuing anyway"
-    uv tool install lazydocker-bin || echo "lazydocker-bin installation failed, continuing anyway"
+    # Verify uv is available
+    if ! command -v uv &> /dev/null; then
+        echo "ERROR: uv installation failed or not in PATH. Trying alternative installation..."
+        
+        # Try cargo install as a fallback
+        if command -v cargo &> /dev/null; then
+            echo "Installing uv via cargo..."
+            cargo install uv
+            export PATH="$HOME/.cargo/bin:$PATH"
+        fi
+        
+        # Final check
+        if ! command -v uv &> /dev/null; then
+            echo "ERROR: Could not install uv. Some functionality will be limited."
+            echo "Please install uv manually after installation completes."
+            echo "Visit https://github.com/astral-sh/uv for installation instructions."
+        fi
+    else
+        echo "uv successfully installed: $(uv --version)"
+    fi
     
-    # Note: setuptools, wheel, virtualenv, and awscli will be installed from pyproject.toml
+    # Install Python using uv if available
+    if command -v uv &> /dev/null; then
+        echo "Installing Python 3.11.4 using uv..."
+        uv python install --force 3.11.4 || echo "Python installation failed, continuing anyway"
+        
+        # Install tools 
+        echo "Installing Python tools with uv..."
+        uv tool install pipx
+        uv tool install pipenv
+        
+        # Install additional utilities
+        uv tool install cruft
+        uv tool install dive-bin
+        uv tool install hadolint-bin
+        uv tool install just-bin
+        uv tool install lazydocker-bin
+    else
+        echo "Skipping uv-based Python installations."
+    fi
+    
+    # Note: setuptools, wheel, virtualenv, and awscli will be installed when setting up the virtual environment
     
     # Install pyenv (for compatibility with pipenv projects)
     echo "Installing pyenv for compatibility with pipenv projects..."
@@ -366,46 +401,41 @@ link-python-config:
         echo "Pipfile has been linked."
     fi
     
-    # Create a persistent user Python environment
+    # Create a persistent user Python environment using uv
     echo "Setting up user Python environment..."
-    if type uv > /dev/null 2>&1; then
-        # Create a persistent venv in ~/.local/pipenv-global
-        USER_VENV="${HOME}/.local/pipenv-global"
+    USER_VENV="${HOME}/.local/pipenv-global"
+    ACTIVATE_DIR="${HOME}/.local/bin"
+    ACTIVATE_SCRIPT="${ACTIVATE_DIR}/activate-pipenv-global"
+    
+    # Only proceed if uv is available
+    if command -v uv &> /dev/null; then
         echo "Creating global environment at $USER_VENV..."
+        # Remove any existing environment to ensure clean setup
+        rm -rf "$USER_VENV"
         mkdir -p "$USER_VENV"
-        uv venv -p 3.11 "$USER_VENV" || echo "Failed to create user venv, continuing anyway..."
         
-        # Ensure pip is properly installed and up to date in the venv
-        echo "Setting up pip in the user environment..."
+        # Create virtual environment with uv
+        uv venv -p 3.11 "$USER_VENV"
+        
         if [ -f "${USER_VENV}/bin/python" ]; then
-            # Use the venv's Python to ensure we're installing pip correctly
-            "${USER_VENV}/bin/python" -m ensurepip --upgrade || echo "Failed to ensure pip, continuing anyway..."
-            "${USER_VENV}/bin/python" -m pip install --upgrade pip || echo "Failed to upgrade pip, continuing anyway..."
-            
-            # Install essential packages in the user venv
             echo "Installing essential packages in user environment..."
-            "${USER_VENV}/bin/pip" install wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+            # Install core packages with uv for consistency
+            "${USER_VENV}/bin/python" -m pip install wheel setuptools virtualenv awscli
+            
+            # Create activation script
+            mkdir -p "$ACTIVATE_DIR"
+            echo "#!/bin/bash" > "$ACTIVATE_SCRIPT"
+            echo "# Auto-generated by dotfiles setup" >> "$ACTIVATE_SCRIPT"
+            echo "source \"${USER_VENV}/bin/activate\"" >> "$ACTIVATE_SCRIPT"
+            chmod +x "$ACTIVATE_SCRIPT"
+            
+            echo "Created activation script at $ACTIVATE_SCRIPT"
         else
-            echo "Failed to find python in user venv, installing in user space instead..."
-            pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+            echo "Failed to create virtual environment. Please check uv installation."
         fi
-        
-        # Create activation script for shell config
-        ACTIVATE_DIR="${HOME}/.local/bin"
-        mkdir -p "$ACTIVATE_DIR"
-        ACTIVATE_SCRIPT="${ACTIVATE_DIR}/activate-pipenv-global"
-        
-        # Write activation script one line at a time
-        echo "#!/bin/bash" > "$ACTIVATE_SCRIPT"
-        echo "# Auto-generated by dotfiles setup" >> "$ACTIVATE_SCRIPT"
-        echo "source \"${USER_VENV}/bin/activate\"" >> "$ACTIVATE_SCRIPT"
-        chmod +x "$ACTIVATE_SCRIPT"
-        
-        echo "Created activation script at $ACTIVATE_SCRIPT"
     else
-        # Fallback to regular pip if uv is not available
-        echo "uv not found, installing packages in user space..."
-        pip install --user wheel setuptools virtualenv awscli || echo "Failed to install packages, continuing anyway..."
+        echo "WARNING: uv not found, skipping global Python environment setup."
+        echo "Please install uv manually and run 'just link-python-config' after installation."
     fi
 
 # Link Claude config file
