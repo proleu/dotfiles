@@ -67,166 +67,13 @@ setup-rsa:
 
 # Install Python environment with uv and pyenv
 install-python-env: install-plugins
-    #!/bin/bash
-    # Remove any existing Conda installations first
-    if [ -d "${HOME}/conda" ] || [ -d "${HOME}/miniconda3" ] || [ -d "${HOME}/anaconda3" ] || [ -d "opt/conda" ]; then
-        echo "Removing existing Conda installations..."
-        rm -rf "${HOME}/conda" "${HOME}/miniconda3" "${HOME}/anaconda3" "/opt/conda"
-    fi
-    
-    # Remove any existing pyenv installations if present
-    if [ -d "${HOME}/.pyenv" ]; then
-        echo "Removing existing pyenv installation..."
-        rm -rf "${HOME}/.pyenv"
-    fi
-    
-    # Install uv
-    echo "Installing uv..."
-    # Install to ~/.local/bin to ensure it works across different Ubuntu versions
-    curl -LsSf https://astral.sh/uv/install.sh | DEST=$HOME/.local/bin sh
-    
-    # Create a persistent PATH update script that we can source immediately
-    echo "Setting up path for uv..."
-    UV_PATH_SCRIPT="${HOME}/.local/bin/setup_uv_path.sh"
-    
-    cat << EOT > "$UV_PATH_SCRIPT"
-#!/bin/bash
-# Add uv installation directories to PATH
-export PATH="\$HOME/.local/bin:\$PATH"
-EOT
-    chmod +x "$UV_PATH_SCRIPT"
-    
-    # Source the path script for the current session
-    source "$UV_PATH_SCRIPT"
-    
-    # Verify uv is available
-    if ! command -v uv &> /dev/null; then
-        echo "ERROR: uv installation failed or not in PATH. Trying alternative installation..."
-        
-        # Try cargo install as a fallback
-        if command -v cargo &> /dev/null; then
-            echo "Installing uv via cargo..."
-            cargo install uv
-            export PATH="$HOME/.cargo/bin:$PATH"
-        fi
-        
-        # Final check
-        if ! command -v uv &> /dev/null; then
-            echo "ERROR: Could not install uv. Some functionality will be limited."
-            echo "Please install uv manually after installation completes."
-            echo "Visit https://github.com/astral-sh/uv for installation instructions."
-        fi
-    else
-        echo "uv successfully installed: $(uv --version)"
-    fi
-    
-    # Install Python using uv if available
-    if command -v uv &> /dev/null; then
-        echo "Installing Python 3.11.4 using uv..."
-        uv python install --force 3.11.4 || echo "Python installation failed, continuing anyway"
-        
-        # Install tools 
-        echo "Installing Python tools with uv..."
-        uv tool install pipx
-        uv tool install pipenv
-        
-        # Install additional utilities
-        uv tool install cruft
-        uv tool install dive-bin
-        uv tool install hadolint-bin
-        uv tool install just-bin
-        uv tool install lazydocker-bin
-    else
-        echo "Skipping uv-based Python installations."
-    fi
-    
-    # Note: setuptools, wheel, virtualenv, and awscli will be installed when setting up the virtual environment
-    
-    # Install pyenv (for compatibility with pipenv projects)
-    echo "Installing pyenv for compatibility with pipenv projects..."
-    # Use the more stable installation URL (pyenv.run)
-    curl -L https://pyenv.run | bash
-    
-    # Process shell configuration files
-    for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
-        if [ -f "$rc_file" ]; then
-            # Create backup of the rc file
-            cp "$rc_file" "${rc_file}.bak.$(date +%s)"
-            
-            # Check shell type
-            shell_type="bash"
-            if [[ "$rc_file" == *".zshrc" ]]; then
-                shell_type="zsh"
-            fi
-            
-            # Add uv to PATH if it doesn't exist
-            if ! grep -q "\.cargo/bin" "$rc_file"; then
-                echo '' >> "$rc_file"
-                echo '# uv installation' >> "$rc_file"
-                echo 'export PATH="$HOME/.cargo/bin:$PATH"  # For uv' >> "$rc_file"
-            fi
-            
-            # Add ~/.local/bin to PATH if it doesn't exist
-            if ! grep -q "\.local/bin" "$rc_file"; then
-                echo 'export PATH="$HOME/.local/bin:$PATH"  # For uv tools and pipx' >> "$rc_file"
-            fi
-            
-            # Check if pyenv configuration already exists to avoid duplication
-            if ! grep -q "PYENV_ROOT" "$rc_file"; then
-                # Add pyenv configuration line by line
-                echo "" >> "$rc_file"
-                echo "# pyenv configuration" >> "$rc_file"
-                echo "export PYENV_ROOT=\"\$HOME/.pyenv\"" >> "$rc_file"
-                echo "if [ -d \"\$PYENV_ROOT/bin\" ]; then" >> "$rc_file"
-                echo "  export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> "$rc_file"
-                echo "fi" >> "$rc_file"
-                
-                # Add pyenv init but make it lower priority than virtualenvs
-                if [[ "$shell_type" == "zsh" ]]; then
-                    echo "# Initialize pyenv but ensure it does not override active virtualenvs" >> "$rc_file"
-                    echo "if [ -z \"\$VIRTUAL_ENV\" ]; then" >> "$rc_file"
-                    echo "  eval \"\$(pyenv init - zsh)\"" >> "$rc_file"
-                    echo "else" >> "$rc_file"
-                    echo "  # When in virtualenv, add pyenv but don't let it take over PATH" >> "$rc_file"
-                    echo "  export PATH=\"\${VIRTUAL_ENV}/bin:\${PATH}\"" >> "$rc_file"
-                    echo "fi" >> "$rc_file"
-                else
-                    echo "# Initialize pyenv but ensure it does not override active virtualenvs" >> "$rc_file"
-                    echo "if [ -z \"\$VIRTUAL_ENV\" ]; then" >> "$rc_file"
-                    echo "  eval \"\$(pyenv init - bash)\"" >> "$rc_file"
-                    echo "else" >> "$rc_file"
-                    echo "  # When in virtualenv, add pyenv but don't let it take over PATH" >> "$rc_file"
-                    echo "  export PATH=\"\${VIRTUAL_ENV}/bin:\${PATH}\"" >> "$rc_file"
-                    echo "fi" >> "$rc_file"
-                fi
-                
-                echo "Updated $rc_file with pyenv configuration"
-            else
-                echo "$rc_file already contains pyenv configuration"
-            fi
-        fi
-    done
-    
-    # Install Python 3.11.4 with pyenv for pipenv compatibility
-    if [ -x "${HOME}/.pyenv/bin/pyenv" ]; then
-        "${HOME}/.pyenv/bin/pyenv" install 3.11.4 || echo "Python installation with pyenv failed, continuing anyway"
-    else
-        echo "pyenv binary not found, skipping Python installation with pyenv"
-    fi
-    
-    # Ensure ~/.local/bin is in PATH for all users
-    if ! grep -q "\.local/bin" "${HOME}/.profile" 2>/dev/null; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.profile"
-        echo "Added ~/.local/bin to PATH in .profile"
-    fi
-    
-    echo "Python environment setup completed"
+    ./install_python.sh
 
 # Install Node.js
 install-nodejs:
     #!/bin/bash
     # Check for both Node.js and npm
-    if ! type node &> /dev/null || ! type npm &> /dev/null; then
+    if ! type node > /dev/null 2>&1 || ! type npm > /dev/null 2>&1; then
         echo "Installing Node.js and npm from binary distribution..."
         # Use the latest LTS version
         NODE_VERSION="v18.18.0"
@@ -237,7 +84,7 @@ install-nodejs:
         rm -rf node-${NODE_VERSION}-linux-x64 node-${NODE_VERSION}-linux-x64.tar.xz
         
         # Verify installation
-        if type node &> /dev/null && type npm &> /dev/null; then
+        if type node > /dev/null 2>&1 && type npm > /dev/null 2>&1; then
             echo "Node.js $(node --version) and npm $(npm --version) installed successfully"
         else
             echo "Node.js or npm installation may have failed, please check manually"
@@ -249,7 +96,7 @@ install-nodejs:
 # Install Neovim
 install-nvim: install-nodejs
     #!/bin/bash
-    if ! type nvim &> /dev/null; then
+    if ! type nvim > /dev/null 2>&1; then
         echo "Installing Neovim..."
         # First try: use the official PPA (this is Ubuntu's recommended method)
         if sudo add-apt-repository ppa:neovim-ppa/unstable -y && \
@@ -275,7 +122,7 @@ install-nvim: install-nodejs
             fi
         fi
         # Set up the editor alternatives
-        if type nvim &> /dev/null; then
+        if type nvim > /dev/null 2>&1; then
             # Store the path to nvim using command substitution
             NVIM_PATH="$(command -v nvim)"
             sudo update-alternatives --install /usr/bin/vi vi "${NVIM_PATH}" 110
@@ -283,7 +130,7 @@ install-nvim: install-nodejs
             sudo update-alternatives --install /usr/bin/editor editor "${NVIM_PATH}" 110
             # Create aliases in /usr/local/bin if they don't exist
             for cmd in ex view vimdiff; do
-                if ! type "${cmd}" &> /dev/null; then
+                if ! type "${cmd}" > /dev/null 2>&1; then
                     echo '#!/bin/sh' | sudo tee "/usr/local/bin/${cmd}" > /dev/null
                     echo "exec nvim -c '${cmd}' \"\$@\"" | sudo tee -a "/usr/local/bin/${cmd}" > /dev/null
                     sudo chmod +x "/usr/local/bin/${cmd}"
@@ -364,7 +211,7 @@ install-aws:
 # Install VS Code
 install-vscode:
     #!/bin/bash
-    if ! type code &> /dev/null; then
+    if ! type code > /dev/null 2>&1; then
         wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
         sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
         sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
@@ -375,94 +222,13 @@ install-vscode:
         echo "VS Code is already installed."
     fi
 
-# Link Python config files
+# Setup Python environment
 link-python-config:
-    #!/bin/bash
-    echo "Setting up Python configuration files..."
-    
-    # We're not using pyproject.toml anymore, installing packages directly
-    
-    # Link Pipfile
-    if [ -f "${HOME}/Pipfile" ]; then
-        # If it's already a symlink to our file, do nothing
-        if [ -L "${HOME}/Pipfile" ] && [ "$(readlink "${HOME}/Pipfile")" == "${PWD}/Pipfile" ]; then
-            echo "Pipfile is already linked correctly."
-        else
-            # Back up existing file
-            echo "Backing up existing Pipfile..."
-            mv "${HOME}/Pipfile" "${HOME}/Pipfile.bak.$(date +%s)"
-            # Create symlink
-            ln -sf "${PWD}/Pipfile" "${HOME}/Pipfile"
-            echo "Pipfile has been linked."
-        fi
-    else
-        # Create symlink if no file exists
-        ln -sf "${PWD}/Pipfile" "${HOME}/Pipfile"
-        echo "Pipfile has been linked."
-    fi
-    
-    # Create a persistent user Python environment using uv
-    echo "Setting up user Python environment..."
-    USER_VENV="${HOME}/.local/pipenv-global"
-    ACTIVATE_DIR="${HOME}/.local/bin"
-    ACTIVATE_SCRIPT="${ACTIVATE_DIR}/activate-pipenv-global"
-    
-    # Only proceed if uv is available
-    if command -v uv &> /dev/null; then
-        echo "Creating global environment at $USER_VENV..."
-        # Remove any existing environment to ensure clean setup
-        rm -rf "$USER_VENV"
-        mkdir -p "$USER_VENV"
-        
-        # Create virtual environment with uv
-        uv venv -p 3.11 "$USER_VENV"
-        
-        if [ -f "${USER_VENV}/bin/python" ]; then
-            echo "Installing essential packages in user environment..."
-            # Install core packages with uv for consistency
-            "${USER_VENV}/bin/python" -m pip install wheel setuptools virtualenv awscli
-            
-            # Create activation script
-            mkdir -p "$ACTIVATE_DIR"
-            echo "#!/bin/bash" > "$ACTIVATE_SCRIPT"
-            echo "# Auto-generated by dotfiles setup" >> "$ACTIVATE_SCRIPT"
-            echo "source \"${USER_VENV}/bin/activate\"" >> "$ACTIVATE_SCRIPT"
-            chmod +x "$ACTIVATE_SCRIPT"
-            
-            echo "Created activation script at $ACTIVATE_SCRIPT"
-        else
-            echo "Failed to create virtual environment. Please check uv installation."
-        fi
-    else
-        echo "WARNING: uv not found, skipping global Python environment setup."
-        echo "Please install uv manually and run 'just link-python-config' after installation."
-    fi
+    ./setup_python_config.sh
 
 # Link Claude config file
 link-claude-config:
-    #!/bin/bash
-    echo "Setting up Claude configuration..."
-    # Create ~/.claude directory if it doesn't exist
-    mkdir -p "${HOME}/.claude"
-    
-    # Check if file already exists
-    if [ -f "${HOME}/.claude/claude.md" ]; then
-        # If it's already a symlink to our file, do nothing
-        if [ -L "${HOME}/.claude/claude.md" ] && [ "$(readlink "${HOME}/.claude/claude.md")" == "${PWD}/CLAUDE.md" ]; then
-            echo "Claude config is already linked correctly."
-        else
-            # Back up existing file
-            echo "Backing up existing Claude config..."
-            mv "${HOME}/.claude/claude.md" "${HOME}/.claude/claude.md.bak.$(date +%s)"
-            # Create symlink
-            ln -sf "${PWD}/CLAUDE.md" "${HOME}/.claude/claude.md"
-            echo "Claude config has been linked."
-        fi
-    else
-        # Create symlink if no file exists
-        ln -sf "${PWD}/CLAUDE.md" "${HOME}/.claude/claude.md"
-        echo "Claude config has been linked."
-    fi
+    ./setup_claude_config.sh
 
 # Restart shell prompt
 restart-shell:
@@ -577,11 +343,6 @@ verify-install:
     done
     
     echo -e "\n--- Checking config files ---"
-    if [ -f "${HOME}/Pipfile" ]; then
-        echo "✓ Pipfile linked"
-    else
-        echo "⚠️ Pipfile not linked"
-    fi
     
     if [ -f "${HOME}/.config/nvim/init.vim" ]; then
         echo "✓ Neovim config exists"
