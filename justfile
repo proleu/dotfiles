@@ -286,14 +286,20 @@ install-vscode:
 link-python-config:
     ./setup_python_config.sh
 
-# Activate dotfiles Python environment
+# Show how to activate dotfiles Python environment
 activate-env:
     #!/bin/bash
     DOTFILES_VENV="${HOME}/dotfiles/.venv"
     
     if [ -d "$DOTFILES_VENV" ]; then
-        echo "To activate the dotfiles environment, run:"
-        echo "source ${DOTFILES_VENV}/bin/activate"
+        echo "To activate the dotfiles environment, use either method:"
+        echo "1. Direct activation:"
+        echo "   source ${DOTFILES_VENV}/bin/activate"
+        echo "2. Using the alias defined in zshrc:"
+        echo "   dotenv"
+        echo
+        echo "To deactivate, simply run:"
+        echo "   deactivate"
     else
         echo "Dotfiles environment not found. Run 'just link-python-config' to create it."
     fi

@@ -21,26 +21,7 @@ else
     fi
 fi
 
-# Auto-activation of Python environments is handled by the activate_dotfiles_env function
-
-# Auto-activate pipenv for projects with Pipfile
-function auto_pipenv_shell() {
-    # Skip activation in home directory and dotfiles directory (since we have our own handling there)
-    if [[ "$PWD" == "$HOME" ]] || [[ "$PWD" == "$HOME/"* && "$PWD" != "$HOME/dotfiles" ]] || [[ "$PWD" == "$HOME/dotfiles" ]]; then
-        return
-    fi
-    
-    if [ -f "Pipfile" ]; then
-        if [ "$PIPENV_ACTIVE" != "1" ] && [ -z "$VIRTUAL_ENV" ]; then
-            echo "Pipfile detected, activating pipenv shell..."
-            # Use PIPENV_IGNORE_VIRTUALENVS to ensure we create a proper project venv
-            PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell
-        fi
-    fi
-}
-
-# Add the auto-activate function to directory change hook
-chpwd_functions=(${chpwd_functions[@]} "auto_pipenv_shell")
+# Manual activation of Python environments is preferred for stability
 
 # Ensure virtualenv/pipenv environment bin directory is at the front of PATH
 if [ -n "$VIRTUAL_ENV" ]; then
@@ -91,25 +72,20 @@ alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
 
 
-# Auto-activate dotfiles Python environment when in dotfiles directory
+# Function to activate the dotfiles Python environment (manual activation)
 function activate_dotfiles_env() {
-    # Only activate when in dotfiles directory and not already in a virtual environment
-    if [[ "$PWD" == "$HOME/dotfiles" ]] && [ -z "$VIRTUAL_ENV" ]; then
-        DOTFILES_ACTIVATE="${HOME}/dotfiles/.venv/bin/activate"
-        if [ -f "$DOTFILES_ACTIVATE" ]; then
-            # Direct activation preserves more shell settings
-            source "$DOTFILES_ACTIVATE"
-            echo "Dotfiles Python environment activated"
-        fi
-    # Deactivate when leaving dotfiles directory and we're in the dotfiles venv
-    elif [[ "$PWD" != "$HOME/dotfiles" ]] && [[ "$VIRTUAL_ENV" == "$HOME/dotfiles/.venv" ]]; then
-        deactivate
-        echo "Dotfiles Python environment deactivated"
+    DOTFILES_ACTIVATE="${HOME}/dotfiles/.venv/bin/activate"
+    if [ -f "$DOTFILES_ACTIVATE" ]; then
+        source "$DOTFILES_ACTIVATE"
+        echo "Dotfiles Python environment activated"
+    else
+        echo "Dotfiles Python environment not found"
+        echo "Run 'just link-python-config' to create it"
     fi
 }
 
-# Add the auto-activate function to directory change hook
-chpwd_functions=(${chpwd_functions[@]} "activate_dotfiles_env")
+# Define alias for easy activation
+alias dotenv="activate_dotfiles_env"
 
 
 # Functions

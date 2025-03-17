@@ -20,8 +20,12 @@ if command -v uv > /dev/null 2>&1; then
         # Use uv pip directly to install packages
         uv pip install --python "${DOTFILES_VENV}/bin/python" pip wheel setuptools virtualenv awscli
         
-        # The auto-activation function handles activation directly
-        echo "Dotfiles Python environment created and will be auto-activated when entering the dotfiles directory"
+        # Inform user about manual activation
+        echo "Dotfiles Python environment created successfully"
+        echo "To activate it, run:"
+        echo "  source ${DOTFILES_VENV}/bin/activate"
+        echo "Or use the alias:"
+        echo "  dotenv"
     else
         echo "Failed to create virtual environment. Please check uv installation."
     fi

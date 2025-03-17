@@ -82,12 +82,16 @@ else
     echo "  To install AWS CLI v2, run: just install-aws"
 fi
 
-# Test activation - skip in test script as it requires interactive shell
+# Test manual activation capability
 echo
-echo "Activation test skipped - requires interactive shell"
-echo "To manually test activation, run:"
-echo "  source ${HOME}/dotfiles/.venv/bin/activate"
-echo "Then cd to different directories to test auto-activation"
+echo "Manual activation can be done using:"
+echo "1. Direct activation:"
+echo "   source ${HOME}/dotfiles/.venv/bin/activate"
+echo "2. Using the alias in zshrc:"
+echo "   dotenv"
+echo
+echo "To deactivate:"
+echo "   deactivate"
 
 echo
 echo "=== All tests passed\! ==="
