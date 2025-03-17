@@ -31,26 +31,8 @@ if command -v uv > /dev/null 2>&1; then
         
         echo "Created activation script at $ACTIVATE_SCRIPT"
         
-        # Add auto-activation to zshrc_update
-        if ! grep -q "activate-dotfiles-env" "${HOME}/dotfiles/zshrc_update"; then
-            # Add to the bottom of the file but before any existing functions
-            sed -i '/^# Functions/i\
-\
-# Auto-activate dotfiles Python environment when in dotfiles directory\
-function activate_dotfiles_env() {\
-    if [[ "$PWD" == "$HOME/dotfiles" ]] && [ -z "$VIRTUAL_ENV" ]; then\
-        if [ -f "$ACTIVATE_SCRIPT" ]; then\
-            source "$ACTIVATE_SCRIPT"\
-            echo "Dotfiles Python environment activated"\
-        fi\
-    fi\
-}\
-\
-# Add the auto-activate function to directory change hook\
-chpwd_functions=(${chpwd_functions[@]} "activate_dotfiles_env")\
-\
-' "${HOME}/dotfiles/zshrc_update"
-        fi
+        # The activation function is already in zshrc_update
+        echo "Dotfiles Python environment will be auto-activated when entering the dotfiles directory"
     else
         echo "Failed to create virtual environment. Please check uv installation."
     fi

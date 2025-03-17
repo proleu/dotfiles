@@ -93,6 +93,25 @@ alias lzd="lazydocker"
 alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
 
+
+# Auto-activate dotfiles Python environment when in dotfiles directory
+function activate_dotfiles_env() {
+    if [[ "$PWD" == "$HOME/dotfiles" ]] && [ -z "$VIRTUAL_ENV" ]; then
+        DOTFILES_ACTIVATE="${HOME}/.local/bin/activate-dotfiles-env"
+        if [ -f "$DOTFILES_ACTIVATE" ]; then
+            source "$DOTFILES_ACTIVATE"
+            echo "Dotfiles Python environment activated"
+        elif [ -f "${HOME}/dotfiles/.venv/bin/activate" ]; then
+            source "${HOME}/dotfiles/.venv/bin/activate"
+            echo "Dotfiles Python environment activated"
+        fi
+    fi
+}
+
+# Add the auto-activate function to directory change hook
+chpwd_functions=(${chpwd_functions[@]} "activate_dotfiles_env")
+
+
 # Functions
 function count_pdbs() { find -type f -name "*.pdb*" | wc -l; }
 function fetch() { wget http://www.rcsb.org/pdb/files/$1.pdb.gz || wget ftp://ftp.wwpdb.org/pub/pdb/data/structures/all/pdb/pdb$1.ent.gz; }
