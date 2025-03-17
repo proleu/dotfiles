@@ -344,6 +344,20 @@ restart-shell:
 verify-install:
     #!/bin/bash
     echo -e "\n=== Verifying installation and configuration ==="
+    # Check system info first
+    echo -e "\n--- System Information ---"
+    echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d \")"
+    echo "Architecture: $(uname -m)"
+    echo "Kernel: $(uname -r)"
+    echo "Hostname: $(hostname)"
+    echo "Username: $(whoami)"
+    
+    # Check $PATH environment variable
+    echo -e "\n--- PATH Environment Variable ---"
+    echo "Current PATH: $PATH"
+    echo "PATH components:"
+    echo "$PATH" | tr ':' '\n'
+    
     echo -e "\n--- Checking shell configuration ---"
     SHELLS=0
     for shell_conf in ~/.zshrc ~/.bashrc ~/.profile ~/.bash_profile; do
@@ -367,12 +381,45 @@ verify-install:
     fi
     
     echo -e "\n--- Checking Python installation ---"
-    if command -v uv >/dev/null 2>&1; then
-        echo "✓ uv: $(uv --version 2>&1 | head -n 1)"
-    else
-        echo "⚠️ uv not installed"
+    # First check in common locations for uv
+    UV_FOUND=false
+    for uv_path in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
+        if [ -f "$uv_path" ]; then
+            echo "✓ uv binary found at: $uv_path"
+            UV_FOUND=true
+            # Check if executable
+            if [ -x "$uv_path" ]; then
+                echo "  ✓ uv is executable"
+            else
+                echo "  ⚠️ uv is not executable"
+            fi
+            ls -la "$uv_path"
+            break
+        fi
+    done
+    
+    if ! $UV_FOUND; then
+        echo "⚠️ uv binary not found in common locations"
     fi
     
+    # Then check using command -v
+    if command -v uv >/dev/null 2>&1; then
+        echo "✓ uv: $(uv --version 2>&1 | head -n 1)"
+        echo "  uv path: $(which uv)"
+    else
+        echo "⚠️ uv not accessible through PATH"
+    fi
+    
+    # Check available Python versions
+    echo -e "\n--- Available Python versions ---"
+    for pyver in python python3 python3.8 python3.9 python3.10 python3.11 python3.12; do
+        if command -v $pyver >/dev/null 2>&1; then
+            echo "✓ $pyver: $($pyver --version)"
+            echo "  Path: $(which $pyver)"
+        fi
+    done
+    
+    # Primary Python
     if command -v python3 >/dev/null 2>&1; then
         echo "✓ python: $(python3 --version)"
     else
@@ -391,8 +438,20 @@ verify-install:
         echo "⚠️ pipenv not installed"
     fi
     
+    # Detailed dotfiles venv check
+    echo -e "\n--- Dotfiles venv details ---"
     if [ -d "${HOME}/dotfiles/.venv" ]; then
         echo "✓ dotfiles venv exists"
+        echo "  Contents of venv directory:"
+        ls -la "${HOME}/dotfiles/.venv"
+        echo "  Contents of venv/bin:"
+        ls -la "${HOME}/dotfiles/.venv/bin" || echo "  ⚠️ No bin directory found"
+        
+        if [ -f "${HOME}/dotfiles/.venv/bin/python" ]; then
+            echo "  Python version in venv: $(${HOME}/dotfiles/.venv/bin/python --version 2>&1)"
+            echo "  Installed packages:"
+            "${HOME}/dotfiles/.venv/bin/pip" list || echo "  ⚠️ Could not list packages"
+        fi
     else
         echo "⚠️ dotfiles venv not found"
     fi
@@ -406,6 +465,7 @@ verify-install:
     echo -e "\n--- Checking core tooling ---"
     if command -v aws >/dev/null 2>&1; then
         echo "✓ aws: $(aws --version 2>&1)"
+        echo "  aws path: $(which aws)"
     else
         echo "⚠️ aws not installed"
     fi
@@ -438,8 +498,17 @@ verify-install:
     for tool in cruft dive hadolint lazydocker just; do
         if command -v $tool >/dev/null 2>&1; then
             echo "✓ $tool installed"
+            echo "  Path: $(which $tool)"
         else
             echo "⚠️ $tool not installed"
+            # Try to find the binary in common locations
+            for tool_path in "$HOME/.local/bin/$tool" "$HOME/.cargo/bin/$tool" "/usr/local/bin/$tool" "/usr/bin/$tool"; do
+                if [ -f "$tool_path" ]; then
+                    echo "  Found binary at: $tool_path"
+                    ls -la "$tool_path"
+                    break
+                fi
+            done
         fi
     done
     

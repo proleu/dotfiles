@@ -1,4 +1,4 @@
-#\!/bin/bash
+#!/bin/bash
 set -e  # Exit on error
 
 echo "=== Testing Python Environment Setup ==="
