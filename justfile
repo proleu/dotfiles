@@ -65,7 +65,7 @@ setup-rsa:
         ssh-keygen -f "${HOME}/.ssh/id_rsa" -t rsa -N ''
     fi
 
-# Install Python environment with uv and pyenv
+# Install Python environment with uv
 install-python-env: install-plugins
     ./install_python.sh
 
@@ -235,6 +235,22 @@ install-vscode:
 link-python-config:
     ./setup_python_config.sh
 
+# Activate dotfiles Python environment
+activate-env:
+    #!/bin/bash
+    DOTFILES_VENV="${HOME}/dotfiles/.venv"
+    ACTIVATE_SCRIPT="${HOME}/.local/bin/activate-dotfiles-env"
+    
+    if [ -f "$ACTIVATE_SCRIPT" ]; then
+        echo "To activate the dotfiles environment, run:"
+        echo "source $ACTIVATE_SCRIPT"
+    elif [ -d "$DOTFILES_VENV" ]; then
+        echo "To activate the dotfiles environment, run:"
+        echo "source ${DOTFILES_VENV}/bin/activate"
+    else
+        echo "Dotfiles environment not found. Run 'just link-python-config' to create it."
+    fi
+
 # Link Claude config file
 link-claude-config:
     ./setup_claude_config.sh
@@ -294,21 +310,16 @@ verify-install:
         echo "⚠️ pipenv not installed"
     fi
     
-    if [ -d "${HOME}/.pyenv" ]; then
-        echo "✓ pyenv installed"
+    if [ -d "${HOME}/dotfiles/.venv" ]; then
+        echo "✓ dotfiles venv exists"
     else
-        echo "⚠️ pyenv not found in ${HOME}/.pyenv"
+        echo "⚠️ dotfiles venv not found"
     fi
     
-    if [ -d "${HOME}/.local/pipenv-global" ]; then
-        echo "✓ global Python environment exists"
-        if [ -f "${HOME}/.local/bin/activate-pipenv-global" ]; then
-            echo "  ✓ activation script exists"
-        else
-            echo "  ⚠️ activation script missing"
-        fi
+    if [ -f "${HOME}/.local/bin/activate-dotfiles-env" ]; then
+        echo "✓ dotfiles activation script exists"
     else
-        echo "⚠️ global Python environment not found"
+        echo "⚠️ dotfiles activation script missing"
     fi
     
     echo -e "\n--- Checking core tooling ---"
