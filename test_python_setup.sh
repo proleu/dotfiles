@@ -57,7 +57,7 @@ echo
 echo "Checking that pip, wheel, setuptools, virtualenv, and awscli are installed..."
 if [ -f "${HOME}/dotfiles/.venv/bin/python" ]; then
     for pkg in pip wheel setuptools virtualenv awscli; do
-        if ${HOME}/dotfiles/.venv/bin/python -m pip list | grep -q "$pkg"; then
+        if uv pip list --python "${HOME}/dotfiles/.venv/bin/python" | grep -q "$pkg"; then
             echo "✅ $pkg is installed"
         else
             echo "❌ $pkg is NOT installed"

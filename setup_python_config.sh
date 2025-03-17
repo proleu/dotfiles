@@ -17,8 +17,8 @@ if command -v uv > /dev/null 2>&1; then
     
     if [ -f "${DOTFILES_VENV}/bin/python" ]; then
         echo "Installing essential packages in dotfiles environment..."
-        # Install only the minimal core packages
-        "${DOTFILES_VENV}/bin/python" -m pip install pip wheel setuptools virtualenv awscli
+        # Use uv pip directly to install packages
+        uv pip install --python "${DOTFILES_VENV}/bin/python" pip wheel setuptools virtualenv awscli
         
         # The auto-activation function handles activation directly
         echo "Dotfiles Python environment created and will be auto-activated when entering the dotfiles directory"
