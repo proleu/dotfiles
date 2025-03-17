@@ -95,19 +95,19 @@ for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.b
         fi
         
         # Add uv to PATH if it doesn't exist
-        if \! grep -q "\.cargo/bin" "$rc_file"; then
+        if ! grep -q ".cargo/bin" "$rc_file"; then
             echo '' >> "$rc_file"
             echo '# uv installation' >> "$rc_file"
             echo 'export PATH="$HOME/.cargo/bin:$PATH"  # For uv' >> "$rc_file"
         fi
         
         # Add ~/.local/bin to PATH if it doesn't exist
-        if \! grep -q "\.local/bin" "$rc_file"; then
+        if ! grep -q ".local/bin" "$rc_file"; then
             echo 'export PATH="$HOME/.local/bin:$PATH"  # For uv tools and pipx' >> "$rc_file"
         fi
         
         # Check if pyenv configuration already exists to avoid duplication
-        if \! grep -q "PYENV_ROOT" "$rc_file"; then
+        if ! grep -q "PYENV_ROOT" "$rc_file"; then
             # Add pyenv configuration line by line
             echo "" >> "$rc_file"
             echo "# pyenv configuration" >> "$rc_file"
@@ -150,7 +150,7 @@ else
 fi
 
 # Ensure ~/.local/bin is in PATH for all users
-if \! grep -q "\.local/bin" "${HOME}/.profile" 2>/dev/null; then
+if ! grep -q ".local/bin" "${HOME}/.profile" 2>/dev/null; then
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.profile"
     echo "Added ~/.local/bin to PATH in .profile"
 fi
