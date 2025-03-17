@@ -5,6 +5,12 @@ if [ -d "${HOME}/conda" ] || [ -d "${HOME}/miniconda3" ] || [ -d "${HOME}/anacon
     rm -rf "${HOME}/conda" "${HOME}/miniconda3" "${HOME}/anaconda3" "/opt/conda"
 fi
 
+# Remove pyenv if present
+if [ -d "${HOME}/.pyenv" ]; then
+    echo "Removing existing pyenv installation..."
+    rm -rf "${HOME}/.pyenv"
+fi
+
 # Install uv
 echo "Installing uv..."
 # Install to ~/.local/bin to ensure it works across different Ubuntu versions
@@ -66,11 +72,19 @@ else
     echo "Skipping uv-based Python installations."
 fi
 
-# Process shell configuration files to add uv paths
+# Process shell configuration files to add uv paths and remove pyenv
 for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
     if [ -f "$rc_file" ]; then
         # Create backup of the rc file
         cp "$rc_file" "${rc_file}.bak.$(date +%s)"
+        
+        # Remove pyenv configuration if present
+        if grep -q "PYENV_ROOT" "$rc_file"; then
+            echo "Removing pyenv configuration from $rc_file..."
+            sed -i '/# pyenv configuration/,/fi/d' "$rc_file" || true
+            sed -i '/PYENV_ROOT/d' "$rc_file" || true
+            sed -i '/pyenv init/d' "$rc_file" || true
+        fi
         
         # Add uv to PATH if it doesn't exist
         if ! grep -q ".cargo/bin" "$rc_file"; then

@@ -251,6 +251,34 @@ activate-env:
         echo "Dotfiles environment not found. Run 'just link-python-config' to create it."
     fi
 
+# Remove pyenv completely from the system
+remove-pyenv:
+    #!/bin/bash
+    if [ -d "${HOME}/.pyenv" ]; then
+        echo "Removing pyenv installation..."
+        rm -rf "${HOME}/.pyenv"
+    else
+        echo "No pyenv installation found at ${HOME}/.pyenv"
+    fi
+    
+    # Clean up shell configuration files
+    for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
+        if [ -f "$rc_file" ]; then
+            if grep -q "PYENV_ROOT\|pyenv init" "$rc_file"; then
+                echo "Removing pyenv configuration from $rc_file..."
+                cp "$rc_file" "${rc_file}.bak.$(date +%s)"
+                sed -i '/# pyenv configuration/,/fi/d' "$rc_file" || true
+                sed -i '/PYENV_ROOT/d' "$rc_file" || true
+                sed -i '/pyenv init/d' "$rc_file" || true
+                echo "Cleaned pyenv configuration from $rc_file"
+            fi
+        fi
+    done
+    
+    # Remove shims from PATH
+    echo "IMPORTANT: You should restart your shell session to remove pyenv from PATH"
+    echo "To restart your shell, run: exec \$SHELL -l"
+
 # Link Claude config file
 link-claude-config:
     ./setup_claude_config.sh
