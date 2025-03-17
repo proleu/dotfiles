@@ -173,48 +173,99 @@ update-nvim: install-nvim
 # Install AWS CLI v2
 install-aws:
     #!/bin/bash
-    # Check if AWS CLI is installed and its version
+    # Thoroughly remove any existing AWS CLI installations
+    echo "Checking for existing AWS CLI installations..."
+    
+    # Check current version if AWS CLI is installed
+    if type aws > /dev/null 2>&1; then
+        AWS_VERSION=$(aws --version 2>&1)
+        echo "Found AWS CLI: $AWS_VERSION"
+        
+        # If it's already v2, no action needed
+        if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
+            echo "AWS CLI v2 is already installed."
+            exit 0
+        fi
+        
+        echo "Found non-v2 AWS CLI. Removing all installations..."
+    else
+        echo "No AWS CLI found. Will install v2."
+    fi
+    
+    # Remove all known installation methods
+    
+    # 1. apt-installed
+    if dpkg -l | grep -q awscli; then
+        echo "Removing apt-installed AWS CLI..."
+        sudo apt remove -y awscli
+        sudo apt autoremove -y
+    fi
+    
+    # 2. pip/uv-installed in system Python
+    echo "Removing pip-installed AWS CLI from system Python..."
+    pip uninstall -y awscli botocore 2>/dev/null || true
+    pip3 uninstall -y awscli botocore 2>/dev/null || true
+    
+    # 3. Check all virtual environments including dotfiles and any user environments
+    if [ -d "${HOME}/dotfiles/.venv" ]; then
+        echo "Removing AWS CLI from dotfiles virtual environment..."
+        ${HOME}/dotfiles/.venv/bin/pip uninstall -y awscli botocore 2>/dev/null || true
+    fi
+    
+    # 4. uv-installed
+    if type uv > /dev/null 2>&1; then
+        echo "Removing uv-installed AWS CLI..."
+        uv pip uninstall --all -y awscli botocore 2>/dev/null || true
+    fi
+    
+    # 5. Remove from PATH - check common locations
+    for awspath in /usr/local/bin/aws /usr/bin/aws ~/.local/bin/aws ~/bin/aws; do
+        if [ -f "$awspath" ] || [ -L "$awspath" ]; then
+            echo "Removing AWS CLI binary at $awspath..."
+            sudo rm -f "$awspath" 2>/dev/null || rm -f "$awspath" 2>/dev/null
+        fi
+    done
+    
+    # 6. Check bundled installations
+    if [ -d "/usr/local/aws-cli" ]; then
+        echo "Removing bundled AWS CLI installation..."
+        sudo rm -rf "/usr/local/aws-cli"
+    fi
+    
+    # Verify all aws binaries are gone
+    echo "Checking if AWS CLI was successfully removed..."
+    if type aws > /dev/null 2>&1; then
+        AWS_PATH=$(which aws)
+        echo "⚠️ WARNING: AWS CLI is still present at: $AWS_PATH"
+        echo "Trying to forcefully remove it..."
+        sudo rm -f "$AWS_PATH" 2>/dev/null || rm -f "$AWS_PATH" 2>/dev/null
+    fi
+    
+    # Install AWS CLI v2
+    echo "Installing AWS CLI v2..."
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    
+    # Use --update if /usr/local/aws-cli exists to handle reinstallation
+    if [ -d "/usr/local/aws-cli" ]; then
+        sudo ./aws/install --update
+    else
+        sudo ./aws/install
+    fi
+    
+    # Clean up downloaded files
+    rm -rf aws awscliv2.zip
+    
+    # Verify installation
     if type aws > /dev/null 2>&1; then
         AWS_VERSION=$(aws --version 2>&1)
         if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
-            echo "AWS CLI v2 is already installed: $AWS_VERSION"
+            echo "✅ AWS CLI v2 installed successfully: $AWS_VERSION"
         else
-            echo "Removing non-v2 AWS CLI installation..."
-            
-            # If it's installed via apt, remove it
-            if dpkg -l | grep -q awscli; then
-                sudo apt remove -y awscli
-            fi
-            
-            # If it's installed via pip or uv, remove it
-            if type uv > /dev/null 2>&1; then
-                uv pip uninstall -y awscli 2>/dev/null || true
-            else
-                pip uninstall -y awscli 2>/dev/null || true
-            fi
-            
-            # Check if AWS CLI is still present after removal attempts
-            if type aws > /dev/null 2>&1; then
-                echo "Warning: AWS CLI is still present after removal attempts."
-                echo "You may need to manually remove it."
-            else
-                # AWS CLI was successfully removed, now install v2
-                echo "Installing AWS CLI v2..."
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                unzip -q awscliv2.zip
-                sudo ./aws/install
-                rm -rf aws awscliv2.zip
-                echo "AWS CLI v2 has been installed"
-            fi
+            echo "❌ AWS CLI installation might not be v2: $AWS_VERSION"
         fi
     else
-        # AWS CLI is not installed, install v2
-        echo "Installing AWS CLI v2..."
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip -q awscliv2.zip
-        sudo ./aws/install
-        rm -rf aws awscliv2.zip
-        echo "AWS CLI v2 has been installed"
+        echo "❌ AWS CLI installation failed."
     fi
 
 # Install VS Code
