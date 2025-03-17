@@ -178,31 +178,34 @@ install-aws:
         AWS_VERSION=$(aws --version 2>&1)
         if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
             echo "AWS CLI v2 is already installed: $AWS_VERSION"
-            echo "Updating AWS CLI v2..."
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip -q awscliv2.zip
-            sudo ./aws/install --update
-            rm -rf aws awscliv2.zip
-            echo "AWS CLI v2 has been updated"
         else
             echo "Removing non-v2 AWS CLI installation..."
+            
             # If it's installed via apt, remove it
             if dpkg -l | grep -q awscli; then
                 sudo apt remove -y awscli
             fi
+            
             # If it's installed via pip or uv, remove it
             if type uv > /dev/null 2>&1; then
                 uv pip uninstall -y awscli 2>/dev/null || true
             else
                 pip uninstall -y awscli 2>/dev/null || true
             fi
-            # Install AWS CLI v2
-            echo "Installing AWS CLI v2..."
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip -q awscliv2.zip
-            sudo ./aws/install
-            rm -rf aws awscliv2.zip
-            echo "AWS CLI v2 has been installed"
+            
+            # Check if AWS CLI is still present after removal attempts
+            if type aws > /dev/null 2>&1; then
+                echo "Warning: AWS CLI is still present after removal attempts."
+                echo "You may need to manually remove it."
+            else
+                # AWS CLI was successfully removed, now install v2
+                echo "Installing AWS CLI v2..."
+                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                unzip -q awscliv2.zip
+                sudo ./aws/install
+                rm -rf aws awscliv2.zip
+                echo "AWS CLI v2 has been installed"
+            fi
         fi
     else
         # AWS CLI is not installed, install v2
