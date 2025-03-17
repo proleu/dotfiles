@@ -239,12 +239,8 @@ link-python-config:
 activate-env:
     #!/bin/bash
     DOTFILES_VENV="${HOME}/dotfiles/.venv"
-    ACTIVATE_SCRIPT="${HOME}/.local/bin/activate-dotfiles-env"
     
-    if [ -f "$ACTIVATE_SCRIPT" ]; then
-        echo "To activate the dotfiles environment, run:"
-        echo "source $ACTIVATE_SCRIPT"
-    elif [ -d "$DOTFILES_VENV" ]; then
+    if [ -d "$DOTFILES_VENV" ]; then
         echo "To activate the dotfiles environment, run:"
         echo "source ${DOTFILES_VENV}/bin/activate"
     else
@@ -344,10 +340,10 @@ verify-install:
         echo "⚠️ dotfiles venv not found"
     fi
     
-    if [ -f "${HOME}/.local/bin/activate-dotfiles-env" ]; then
-        echo "✓ dotfiles activation script exists"
+    if [ -f "${HOME}/dotfiles/.venv/bin/activate" ]; then
+        echo "✓ dotfiles venv activation script exists"
     else
-        echo "⚠️ dotfiles activation script missing"
+        echo "⚠️ dotfiles venv activation script missing"
     fi
     
     echo -e "\n--- Checking core tooling ---"

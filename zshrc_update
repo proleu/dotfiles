@@ -96,15 +96,18 @@ alias so="source $HOME/.zshrc"
 
 # Auto-activate dotfiles Python environment when in dotfiles directory
 function activate_dotfiles_env() {
+    # Only activate when in dotfiles directory and not already in a virtual environment
     if [[ "$PWD" == "$HOME/dotfiles" ]] && [ -z "$VIRTUAL_ENV" ]; then
-        DOTFILES_ACTIVATE="${HOME}/.local/bin/activate-dotfiles-env"
+        DOTFILES_ACTIVATE="${HOME}/dotfiles/.venv/bin/activate"
         if [ -f "$DOTFILES_ACTIVATE" ]; then
+            # Direct activation preserves more shell settings
             source "$DOTFILES_ACTIVATE"
             echo "Dotfiles Python environment activated"
-        elif [ -f "${HOME}/dotfiles/.venv/bin/activate" ]; then
-            source "${HOME}/dotfiles/.venv/bin/activate"
-            echo "Dotfiles Python environment activated"
         fi
+    # Deactivate when leaving dotfiles directory and we're in the dotfiles venv
+    elif [[ "$PWD" != "$HOME/dotfiles" ]] && [[ "$VIRTUAL_ENV" == "$HOME/dotfiles/.venv" ]]; then
+        deactivate
+        echo "Dotfiles Python environment deactivated"
     fi
 }
 
