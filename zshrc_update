@@ -8,6 +8,29 @@ if [ -f "$HOME/.bashrc" ]; then
     done
 fi
 
+# Add uv path script if it exists
+if [ -f "$HOME/.local/bin/setup_uv_path.sh" ]; then
+    source "$HOME/.local/bin/setup_uv_path.sh"
+else
+    # Fallback path settings if script doesn't exist
+    if [ -d "$HOME/.local/bin" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    if [ -d "$HOME/.cargo/bin" ]; then
+        export PATH="$HOME/.cargo/bin:$PATH"
+    fi
+fi
+
+# Manual activation of Python environments is preferred for stability
+
+# Ensure virtualenv/pipenv environment bin directory is at the front of PATH
+if [ -n "$VIRTUAL_ENV" ]; then
+    # Move VIRTUAL_ENV/bin to front of PATH
+    PATH="${VIRTUAL_ENV}/bin:${PATH}"
+    # Rehash to update command paths
+    hash -r 2>/dev/null || true
+fi
+
 # History
 setopt histignorealldups sharehistory
 HISTSIZE=SAVEHIST=10000
@@ -47,6 +70,70 @@ alias bbbbbb="cd ../../../../../.."
 alias lzd="lazydocker"
 alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
+
+
+# Smart venv function that activates a Python virtual environment in the current directory
+function venv() {
+    # Allow deactivation by calling venv off
+    if [ "$1" = "off" ]; then
+        if [ -n "$VIRTUAL_ENV" ]; then
+            deactivate
+            echo "Virtual environment deactivated"
+            return 0
+        else
+            echo "No active virtual environment"
+            return 1
+        fi
+    fi
+    
+    # Handle specified directory or specific venv path
+    if [ -n "$1" ]; then
+        if [ -d "$1" ]; then
+            # Specified path is a directory - look for .venv inside it
+            if [ -f "$1/.venv/bin/activate" ]; then
+                source "$1/.venv/bin/activate"
+                echo "Activated virtual environment from $1/.venv"
+                return 0
+            # Check if the directory itself is a venv
+            elif [ -f "$1/bin/activate" ]; then
+                source "$1/bin/activate"
+                echo "Activated virtual environment from $1"
+                return 0
+            else
+                echo "No virtual environment found in $1"
+                return 1
+            fi
+        elif [ -f "$1/bin/activate" ]; then
+            # Specified path is a venv
+            source "$1/bin/activate"
+            echo "Activated virtual environment from $1"
+            return 0
+        else
+            echo "Invalid path: $1"
+            return 1
+        fi
+    fi
+    
+    # No arguments, so look for .venv in the current directory only
+    if [ -f ".venv/bin/activate" ]; then
+        source ".venv/bin/activate"
+        echo "Activated virtual environment from ./.venv"
+        return 0
+    # Special case for dotfiles
+    elif [ -f "$HOME/dotfiles/.venv/bin/activate" ]; then
+        source "$HOME/dotfiles/.venv/bin/activate"
+        echo "Activated dotfiles virtual environment"
+        return 0
+    else
+        echo "No virtual environment found in current directory"
+        echo "Use 'venv /path/to/venv' to specify a virtual environment"
+        return 1
+    fi
+}
+
+# Keep old alias for backward compatibility
+alias dotenv="venv $HOME/dotfiles/.venv"
+
 
 # Functions
 function count_pdbs() { find -type f -name "*.pdb*" | wc -l; }
