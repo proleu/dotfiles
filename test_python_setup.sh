@@ -54,16 +54,32 @@ fi
 
 # Validate packages
 echo
-echo "Checking that pip, wheel, setuptools, virtualenv, and awscli are installed..."
+echo "Checking that required packages are installed in the virtual environment..."
 if [ -f "${HOME}/dotfiles/.venv/bin/python" ]; then
     for pkg in pip wheel setuptools virtualenv awscli; do
         if uv pip list --python "${HOME}/dotfiles/.venv/bin/python" | grep -q "$pkg"; then
-            echo "✅ $pkg is installed"
+            echo "✅ $pkg is installed in the venv"
         else
-            echo "❌ $pkg is NOT installed"
+            echo "❌ $pkg is NOT installed in the venv"
             exit 1
         fi
     done
+fi
+
+# Check for system AWS CLI v2
+echo
+echo "Checking system AWS CLI installation..."
+if command -v aws > /dev/null 2>&1; then
+    AWS_VERSION=$(aws --version 2>&1)
+    if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
+        echo "✅ System AWS CLI v2 is installed: $AWS_VERSION"
+    else
+        echo "❌ System AWS CLI is not v2: $AWS_VERSION"
+        echo "  To install AWS CLI v2, run: just install-aws"
+    fi
+else
+    echo "ℹ️ System AWS CLI not found"
+    echo "  To install AWS CLI v2, run: just install-aws"
 fi
 
 # Test activation - skip in test script as it requires interactive shell
