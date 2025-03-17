@@ -21,30 +21,3 @@ else
     ln -sf "${PWD}/CLAUDE.md" "${HOME}/.claude/claude.md"
     echo "Claude config has been linked."
 fi
-
-# Restart shell prompt
-restart-shell:
-echo "Please restart your shell for changes to take effect"
-
-# Verify installation
-verify-install:
-#!/bin/bash
-echo -e "\n=== Verifying installation and configuration ==="
-echo -e "\n--- Checking shell configuration ---"
-SHELLS=0
-for shell_conf in ~/.zshrc ~/.bashrc ~/.profile ~/.bash_profile; do
-    if [ -f "$shell_conf" ]; then
-        echo "✓ $shell_conf exists"
-        SHELLS=$((SHELLS+1))
-        if grep -q "\.cargo/bin" "$shell_conf"; then
-            echo "  ✓ cargo/bin in PATH"
-        else
-            echo "  ⚠️ cargo/bin NOT in PATH"
-        fi
-        if grep -q "\.local/bin" "$shell_conf"; then
-            echo "  ✓ .local/bin in PATH"
-        else
-            echo "  ⚠️ .local/bin NOT in PATH"
-        fi
-    fi
-done
