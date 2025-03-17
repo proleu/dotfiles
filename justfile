@@ -178,6 +178,12 @@ install-aws:
         AWS_VERSION=$(aws --version 2>&1)
         if [[ "$AWS_VERSION" == *"aws-cli/2."* ]]; then
             echo "AWS CLI v2 is already installed: $AWS_VERSION"
+            echo "Updating AWS CLI v2..."
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -q awscliv2.zip
+            sudo ./aws/install --update
+            rm -rf aws awscliv2.zip
+            echo "AWS CLI v2 has been updated"
         else
             echo "Removing non-v2 AWS CLI installation..."
             # If it's installed via apt, remove it
