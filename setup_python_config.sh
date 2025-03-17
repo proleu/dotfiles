@@ -103,9 +103,11 @@ if command -v uv > /dev/null 2>&1; then
         # Inform user about manual activation
         echo "✅ Dotfiles Python environment created successfully"
         echo "To activate it, run:"
-        echo "  source ${DOTFILES_VENV}/bin/activate"
-        echo "Or use the alias:"
-        echo "  dotenv"
+        echo "  venv"
+        echo "To activate any virtual environment in the current directory:"
+        echo "  venv"
+        echo "To deactivate:"
+        echo "  venv off"
     else
         echo "❌ Failed to create virtual environment with uv."
         echo "Trying alternative approach with standard venv module..."
@@ -117,6 +119,10 @@ if command -v uv > /dev/null 2>&1; then
                 echo "Installing essential packages using standard pip..."
                 "${DOTFILES_VENV}/bin/pip" install --upgrade pip wheel setuptools virtualenv awscli
                 echo "✅ Dotfiles Python environment created successfully using system Python"
+                echo "To activate it, run:"
+                echo "  venv"
+                echo "To deactivate:"
+                echo "  venv off"
             else
                 echo "❌ Failed to create virtual environment with system Python."
             fi

@@ -72,20 +72,67 @@ alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
 
 
-# Function to activate the dotfiles Python environment (manual activation)
-function activate_dotfiles_env() {
-    DOTFILES_ACTIVATE="${HOME}/dotfiles/.venv/bin/activate"
-    if [ -f "$DOTFILES_ACTIVATE" ]; then
-        source "$DOTFILES_ACTIVATE"
-        echo "Dotfiles Python environment activated"
+# Smart venv function that activates a Python virtual environment in the current directory
+function venv() {
+    # Allow deactivation by calling venv off
+    if [ "$1" = "off" ]; then
+        if [ -n "$VIRTUAL_ENV" ]; then
+            deactivate
+            echo "Virtual environment deactivated"
+            return 0
+        else
+            echo "No active virtual environment"
+            return 1
+        fi
+    fi
+    
+    # Handle specified directory or specific venv path
+    if [ -n "$1" ]; then
+        if [ -d "$1" ]; then
+            # Specified path is a directory - look for .venv inside it
+            if [ -f "$1/.venv/bin/activate" ]; then
+                source "$1/.venv/bin/activate"
+                echo "Activated virtual environment from $1/.venv"
+                return 0
+            # Check if the directory itself is a venv
+            elif [ -f "$1/bin/activate" ]; then
+                source "$1/bin/activate"
+                echo "Activated virtual environment from $1"
+                return 0
+            else
+                echo "No virtual environment found in $1"
+                return 1
+            fi
+        elif [ -f "$1/bin/activate" ]; then
+            # Specified path is a venv
+            source "$1/bin/activate"
+            echo "Activated virtual environment from $1"
+            return 0
+        else
+            echo "Invalid path: $1"
+            return 1
+        fi
+    fi
+    
+    # No arguments, so look for .venv in the current directory only
+    if [ -f ".venv/bin/activate" ]; then
+        source ".venv/bin/activate"
+        echo "Activated virtual environment from ./.venv"
+        return 0
+    # Special case for dotfiles
+    elif [ -f "$HOME/dotfiles/.venv/bin/activate" ]; then
+        source "$HOME/dotfiles/.venv/bin/activate"
+        echo "Activated dotfiles virtual environment"
+        return 0
     else
-        echo "Dotfiles Python environment not found"
-        echo "Run 'just link-python-config' to create it"
+        echo "No virtual environment found in current directory"
+        echo "Use 'venv /path/to/venv' to specify a virtual environment"
+        return 1
     fi
 }
 
-# Define alias for easy activation
-alias dotenv="activate_dotfiles_env"
+# Keep old alias for backward compatibility
+alias dotenv="venv $HOME/dotfiles/.venv"
 
 
 # Functions

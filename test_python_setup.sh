@@ -85,12 +85,16 @@ fi
 # Test manual activation capability
 echo
 echo "Manual activation can be done using:"
-echo "1. Direct activation:"
+echo "1. Using the venv command:"
+echo "   venv"
+echo "2. Direct activation:"
 echo "   source ${HOME}/dotfiles/.venv/bin/activate"
-echo "2. Using the alias in zshrc:"
+echo "3. Using the legacy alias:"
 echo "   dotenv"
 echo
 echo "To deactivate:"
+echo "   venv off"
+echo "   or"
 echo "   deactivate"
 
 echo
