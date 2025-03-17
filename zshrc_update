@@ -21,20 +21,17 @@ else
     fi
 fi
 
-# Auto-activate global Python environment if not already in a virtual environment
-if [ -z "$VIRTUAL_ENV" ] && [ -f "$HOME/.local/bin/activate-pipenv-global" ]; then
-    source "$HOME/.local/bin/activate-pipenv-global"
-fi
+# Auto-activation of Python environments is handled by the activate_dotfiles_env function
 
-# Don't auto-activate pipenv in home directory since it would conflict with global env
+# Auto-activate pipenv for projects with Pipfile
 function auto_pipenv_shell() {
-    # Skip activation in home directory
-    if [[ "$PWD" == "$HOME" ]] || [[ "$PWD" == "$HOME/"* && "$PWD" != "$HOME/dotfiles" ]]; then
+    # Skip activation in home directory and dotfiles directory (since we have our own handling there)
+    if [[ "$PWD" == "$HOME" ]] || [[ "$PWD" == "$HOME/"* && "$PWD" != "$HOME/dotfiles" ]] || [[ "$PWD" == "$HOME/dotfiles" ]]; then
         return
     fi
     
     if [ -f "Pipfile" ]; then
-        if [ "$PIPENV_ACTIVE" != "1" ]; then
+        if [ "$PIPENV_ACTIVE" != "1" ] && [ -z "$VIRTUAL_ENV" ]; then
             echo "Pipfile detected, activating pipenv shell..."
             # Use PIPENV_IGNORE_VIRTUALENVS to ensure we create a proper project venv
             PIPENV_IGNORE_VIRTUALENVS=1 pipenv shell
@@ -45,9 +42,9 @@ function auto_pipenv_shell() {
 # Add the auto-activate function to directory change hook
 chpwd_functions=(${chpwd_functions[@]} "auto_pipenv_shell")
 
-# Ensure virtualenv/pipenv environment takes precedence over pyenv shims
+# Ensure virtualenv/pipenv environment bin directory is at the front of PATH
 if [ -n "$VIRTUAL_ENV" ]; then
-    # Move VIRTUAL_ENV/bin to front of PATH to override pyenv
+    # Move VIRTUAL_ENV/bin to front of PATH
     PATH="${VIRTUAL_ENV}/bin:${PATH}"
     # Rehash to update command paths
     hash -r 2>/dev/null || true

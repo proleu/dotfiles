@@ -4,8 +4,6 @@ echo "Setting up Python configuration files..."
 # Create a dotfiles-specific Python environment using uv
 echo "Setting up dotfiles Python environment..."
 DOTFILES_VENV="${HOME}/dotfiles/.venv"
-ACTIVATE_DIR="${HOME}/.local/bin"
-ACTIVATE_SCRIPT="${ACTIVATE_DIR}/activate-dotfiles-env"
 
 # Only proceed if uv is available
 if command -v uv > /dev/null 2>&1; then
