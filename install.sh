@@ -17,6 +17,7 @@ required_packages=(
   libssl-dev
   libxmlsec1-dev
   libxml2-dev
+  ninja-build
   openjdk-11-jdk
   openvpn
   python3-dev
