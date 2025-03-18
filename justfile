@@ -502,6 +502,12 @@ verify-install:
         echo "⚠️ nvim not installed"
     fi
     
+    if command -v ninja >/dev/null 2>&1; then
+        echo "✓ ninja: $(ninja --version)"
+    else
+        echo "⚠️ ninja not installed"
+    fi
+    
     echo -e "\n--- Checking additional tools ---"
     for tool in cruft dive hadolint lazydocker just; do
         if command -v $tool >/dev/null 2>&1; then
