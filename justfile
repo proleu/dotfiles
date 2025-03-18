@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install optional-installs
 
 # Update Git configuration
 update-gitconfig:
@@ -536,3 +536,159 @@ verify-install:
     
     echo -e "\n=== Verification complete ===\n"
     echo "For any warnings above, you might want to run the specific target manually or check the logs."
+
+# ===== Optional Installations =====
+# These are only installed on personal machines (non-EC2/non-ubuntu user)
+
+# Check if we should run optional installations
+check-optional-install:
+    #!/bin/bash
+    if [ "$(whoami)" = "ubuntu" ]; then
+        echo "Detected EC2/cloud user, skipping optional installations"
+        exit 1
+    else
+        echo "Personal machine detected, will check for optional installations"
+        exit 0
+    fi
+
+# Install PyMol for molecular visualization
+optional-install-pymol: check-optional-install
+    #!/bin/bash
+    if command -v pymol >/dev/null 2>&1; then
+        echo "PyMol is already installed: $(pymol --version 2>&1 | head -n 1 || echo "version unknown")"
+    else
+        echo "Installing PyMol..."
+        
+        # Create directories if they don't exist
+        mkdir -p "$HOME/pymol"
+        mkdir -p "$HOME/.local/bin"
+        
+        # Download and extract PyMol
+        PYMOL_URL="https://storage.googleapis.com/pymol-storage/installers/PyMOL-3.1.3.1_appveyor1974-Linux-x86_64-py310.tar.bz2"
+        PYMOL_TAR="/tmp/pymol.tar.bz2"
+        
+        wget -O "$PYMOL_TAR" "$PYMOL_URL"
+        tar -xjf "$PYMOL_TAR" -C "$HOME/pymol" --strip-components=1
+        rm -f "$PYMOL_TAR"
+        
+        # Create symlink
+        ln -sf "$HOME/pymol/pymol" "$HOME/.local/bin/pymol"
+        
+        if command -v pymol >/dev/null 2>&1; then
+            echo "✅ PyMol installed successfully"
+        else
+            echo "❌ PyMol installation failed. Try adding $HOME/.local/bin to your PATH"
+        fi
+    fi
+
+# Install Slack
+optional-install-slack: check-optional-install
+    #!/bin/bash
+    if command -v slack >/dev/null 2>&1 || [ -d "/usr/lib/slack" ] || [ -d "/opt/slack" ]; then
+        echo "Slack is already installed"
+    else
+        echo "Installing Slack..."
+        
+        # Using Slack's DEB package as referenced in the instructions
+        sudo apt-get update
+        
+        wget -O /tmp/slack.deb "https://downloads.slack-edge.com/releases/linux/4.33.73/prod/x64/slack-desktop-4.33.73-amd64.deb" || \
+            wget -O /tmp/slack.deb "https://downloads.slack-edge.com/linux_releases/slack-desktop-4.29.149-amd64.deb"
+        
+        sudo apt-get install -y /tmp/slack.deb
+        rm -f /tmp/slack.deb
+        
+        if [ -d "/usr/lib/slack" ] || [ -d "/opt/slack" ] || command -v slack >/dev/null 2>&1; then
+            echo "✅ Slack installed successfully"
+        else
+            echo "❌ Slack installation failed"
+        fi
+    fi
+
+# Install Docker rootless
+optional-install-docker: check-optional-install
+    #!/bin/bash
+    if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+        echo "Docker is already installed and running: $(docker --version)"
+    else
+        echo "Installing Docker rootless according to instructions..."
+        
+        # Remove existing Docker installations as per instructions
+        for pkg in docker.io docker-doc docker-compose; do
+            sudo apt-get -y remove $pkg || true
+        done
+        
+        # Install Docker
+        sudo apt-get -y update
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+        
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          
+        sudo apt-get -y update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        
+        # Set up rootless Docker
+        sudo systemctl disable --now docker.service docker.socket
+        sudo rm -f /var/run/docker.sock
+        
+        # Install and configure rootless Docker
+        sudo apt-get install -y uidmap dbus-user-session fuse-overlayfs slirp4netns
+        dockerd-rootless-setuptool.sh install --force
+        
+        # Enable the service
+        systemctl --user enable docker
+        loginctl enable-linger $(whoami)
+        
+        # Add environment variables to shell config
+        echo 'export PATH=$HOME/bin:$PATH' >> "$HOME/.bashrc"
+        echo 'export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock' >> "$HOME/.bashrc"
+        
+        if [ -f "$HOME/.zshrc" ]; then
+            echo 'export PATH=$HOME/bin:$PATH' >> "$HOME/.zshrc"
+            echo 'export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock' >> "$HOME/.zshrc"
+        fi
+        
+        if command -v docker >/dev/null 2>&1; then
+            echo "✅ Docker rootless installed successfully"
+            echo "To use Docker in current session without logout/login:"
+            echo "export PATH=$HOME/bin:$PATH"
+            echo "export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock"
+        else
+            echo "❌ Docker rootless installation failed"
+        fi
+    fi
+
+# Install AWS VPN Client
+optional-install-awsvpn: check-optional-install
+    #!/bin/bash
+    if [ -d "/opt/awsvpnclient" ]; then
+        echo "AWS VPN Client is already installed"
+    else
+        echo "Installing AWS VPN Client according to instructions..."
+        
+        # Add AWS VPN Client repository as per instructions
+        wget -qO- https://d20adtppz83p9s.cloudfront.net/GTK/latest/debian-repo/awsvpnclient_public_key.asc | sudo tee /etc/apt/trusted.gpg.d/awsvpnclient_public_key.asc
+        echo "deb [arch=amd64] https://d20adtppz83p9s.cloudfront.net/GTK/latest/debian-repo ubuntu main" | sudo tee /etc/apt/sources.list.d/aws-vpn-client.list
+        
+        # Install the client
+        sudo apt-get update
+        sudo apt-get install -y awsvpnclient
+        
+        if [ -d "/opt/awsvpnclient" ]; then
+            echo "✅ AWS VPN Client installed successfully"
+        else
+            echo "❌ AWS VPN Client installation failed"
+        fi
+    fi
+
+# Install all optional tools if on a personal machine
+optional-installs:
+    @just optional-install-pymol || echo "Skipping PyMol installation"
+    @just optional-install-slack || echo "Skipping Slack installation"
+    @just optional-install-docker || echo "Skipping Docker installation"
+    @just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
