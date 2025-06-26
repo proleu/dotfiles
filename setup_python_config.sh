@@ -5,12 +5,12 @@ echo "Setting up Python configuration files..."
 DOTFILES_VENV="${HOME}/dotfiles/.venv"
 
 # Enhanced PATH setting for uv 
-export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 echo "Checking for uv in PATH..."
 # Explicitly look for uv in common locations if command -v fails
 if ! command -v uv > /dev/null 2>&1; then
-    for uv_path in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
+    for uv_path in "$HOME/.local/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
         if [ -f "$uv_path" ]; then
             echo "Found uv at $uv_path, adding to PATH"
             export PATH="$(dirname "$uv_path"):$PATH"

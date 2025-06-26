@@ -372,11 +372,6 @@ verify-install:
         if [ -f "$shell_conf" ]; then
             echo "✓ $shell_conf exists"
             SHELLS=$((SHELLS+1))
-            if grep -q "\.cargo/bin" "$shell_conf"; then
-                echo "  ✓ cargo/bin in PATH"
-            else
-                echo "  ⚠️ cargo/bin NOT in PATH"
-            fi
             if grep -q "\.local/bin" "$shell_conf"; then
                 echo "  ✓ .local/bin in PATH"
             else
@@ -391,7 +386,7 @@ verify-install:
     echo -e "\n--- Checking Python installation ---"
     # First check in common locations for uv
     UV_FOUND=false
-    for uv_path in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
+    for uv_path in "$HOME/.local/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
         if [ -f "$uv_path" ]; then
             echo "✓ uv binary found at: $uv_path"
             UV_FOUND=true
@@ -516,7 +511,7 @@ verify-install:
         else
             echo "⚠️ $tool not installed"
             # Try to find the binary in common locations
-            for tool_path in "$HOME/.local/bin/$tool" "$HOME/.cargo/bin/$tool" "/usr/local/bin/$tool" "/usr/bin/$tool"; do
+            for tool_path in "$HOME/.local/bin/$tool" "/usr/local/bin/$tool" "/usr/bin/$tool"; do
                 if [ -f "$tool_path" ]; then
                     echo "  Found binary at: $tool_path"
                     ls -la "$tool_path"
