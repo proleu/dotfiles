@@ -68,6 +68,7 @@ alias lzd="lazydocker"
 # Ultra fast perl-based equivalent to rm *
 alias pnuke="perl -e 'for(<*>){unlink}'"
 alias so="source $HOME/.zshrc"
+alias penv="source .venv/bin/activate"
 
 
 # Functions
