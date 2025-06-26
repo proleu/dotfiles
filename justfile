@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install optional-installs
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install optional-installs
 
 # Update Git configuration
 update-gitconfig:
@@ -282,64 +282,6 @@ install-vscode:
         echo "VS Code is already installed."
     fi
 
-# Setup Python environment
-link-python-config:
-    ./setup_python_config.sh
-
-# Show how to activate Python environments
-activate-env:
-    #!/bin/bash
-    DOTFILES_VENV="${HOME}/dotfiles/.venv"
-    
-    if [ -d "$DOTFILES_VENV" ]; then
-        echo "To activate the dotfiles environment:"
-        echo "  venv"
-        echo ""
-        echo "To activate a virtual environment in the current directory:"
-        echo "  venv"
-        echo ""
-        echo "To activate a specific virtual environment:"
-        echo "  venv /path/to/venv"
-        echo ""
-        echo "To deactivate any virtual environment:"
-        echo "  venv off"
-        echo "  or"
-        echo "  deactivate"
-        echo ""
-        echo "For backward compatibility, the old command still works:"
-        echo "  dotenv"
-    else
-        echo "Dotfiles environment not found. Run 'just link-python-config' to create it."
-    fi
-
-# Remove pyenv completely from the system
-remove-pyenv:
-    #!/bin/bash
-    if [ -d "${HOME}/.pyenv" ]; then
-        echo "Removing pyenv installation..."
-        rm -rf "${HOME}/.pyenv"
-    else
-        echo "No pyenv installation found at ${HOME}/.pyenv"
-    fi
-    
-    # Clean up shell configuration files
-    for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
-        if [ -f "$rc_file" ]; then
-            if grep -q "PYENV_ROOT\|pyenv init" "$rc_file"; then
-                echo "Removing pyenv configuration from $rc_file..."
-                cp "$rc_file" "${rc_file}.bak.$(date +%s)"
-                sed -i '/# pyenv configuration/,/fi/d' "$rc_file" || true
-                sed -i '/PYENV_ROOT/d' "$rc_file" || true
-                sed -i '/pyenv init/d' "$rc_file" || true
-                echo "Cleaned pyenv configuration from $rc_file"
-            fi
-        fi
-    done
-    
-    # Remove shims from PATH
-    echo "IMPORTANT: You should restart your shell session to remove pyenv from PATH"
-    echo "To restart your shell, run: exec \$SHELL -l"
-
 # Link Claude config file
 link-claude-config:
     ./setup_claude_config.sh
@@ -372,11 +314,6 @@ verify-install:
         if [ -f "$shell_conf" ]; then
             echo "✓ $shell_conf exists"
             SHELLS=$((SHELLS+1))
-            if grep -q "\.cargo/bin" "$shell_conf"; then
-                echo "  ✓ cargo/bin in PATH"
-            else
-                echo "  ⚠️ cargo/bin NOT in PATH"
-            fi
             if grep -q "\.local/bin" "$shell_conf"; then
                 echo "  ✓ .local/bin in PATH"
             else
@@ -391,7 +328,7 @@ verify-install:
     echo -e "\n--- Checking Python installation ---"
     # First check in common locations for uv
     UV_FOUND=false
-    for uv_path in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
+    for uv_path in "$HOME/.local/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
         if [ -f "$uv_path" ]; then
             echo "✓ uv binary found at: $uv_path"
             UV_FOUND=true
@@ -432,42 +369,6 @@ verify-install:
         echo "✓ python: $(python3 --version)"
     else
         echo "⚠️ python not installed"
-    fi
-    
-    if command -v pip >/dev/null 2>&1; then
-        echo "✓ pip: $(pip --version)"
-    else
-        echo "⚠️ pip not installed"
-    fi
-    
-    if command -v pipenv >/dev/null 2>&1; then
-        echo "✓ pipenv: $(pipenv --version)"
-    else
-        echo "⚠️ pipenv not installed"
-    fi
-    
-    # Detailed dotfiles venv check
-    echo -e "\n--- Dotfiles venv details ---"
-    if [ -d "${HOME}/dotfiles/.venv" ]; then
-        echo "✓ dotfiles venv exists"
-        echo "  Contents of venv directory:"
-        ls -la "${HOME}/dotfiles/.venv"
-        echo "  Contents of venv/bin:"
-        ls -la "${HOME}/dotfiles/.venv/bin" || echo "  ⚠️ No bin directory found"
-        
-        if [ -f "${HOME}/dotfiles/.venv/bin/python" ]; then
-            echo "  Python version in venv: $(${HOME}/dotfiles/.venv/bin/python --version 2>&1)"
-            echo "  Installed packages:"
-            "${HOME}/dotfiles/.venv/bin/pip" list || echo "  ⚠️ Could not list packages"
-        fi
-    else
-        echo "⚠️ dotfiles venv not found"
-    fi
-    
-    if [ -f "${HOME}/dotfiles/.venv/bin/activate" ]; then
-        echo "✓ dotfiles venv activation script exists"
-    else
-        echo "⚠️ dotfiles venv activation script missing"
     fi
     
     echo -e "\n--- Checking core tooling ---"
@@ -516,7 +417,7 @@ verify-install:
         else
             echo "⚠️ $tool not installed"
             # Try to find the binary in common locations
-            for tool_path in "$HOME/.local/bin/$tool" "$HOME/.cargo/bin/$tool" "/usr/local/bin/$tool" "/usr/bin/$tool"; do
+            for tool_path in "$HOME/.local/bin/$tool" "/usr/local/bin/$tool" "/usr/bin/$tool"; do
                 if [ -f "$tool_path" ]; then
                     echo "  Found binary at: $tool_path"
                     ls -la "$tool_path"
@@ -546,19 +447,9 @@ verify-install:
 # ===== Optional Installations =====
 # These are only installed on personal machines (non-EC2/non-ubuntu user)
 
-# Check if we should run optional installations
-check-optional-install:
-    #!/bin/bash
-    if [ "$(whoami)" = "ubuntu" ]; then
-        echo "Detected EC2/cloud user, skipping optional installations"
-        exit 1
-    else
-        echo "Personal machine detected, will check for optional installations"
-        exit 0
-    fi
 
 # Install PyMol for molecular visualization
-optional-install-pymol: check-optional-install
+optional-install-pymol:
     #!/bin/bash
     if command -v pymol >/dev/null 2>&1; then
         echo "PyMol is already installed: $(pymol --version 2>&1 | head -n 1 || echo "version unknown")"
@@ -588,7 +479,7 @@ optional-install-pymol: check-optional-install
     fi
 
 # Install Slack
-optional-install-slack: check-optional-install
+optional-install-slack:
     #!/bin/bash
     if command -v slack >/dev/null 2>&1 || [ -d "/usr/lib/slack" ] || [ -d "/opt/slack" ]; then
         echo "Slack is already installed"
@@ -612,7 +503,7 @@ optional-install-slack: check-optional-install
     fi
 
 # Install Docker rootless
-optional-install-docker: check-optional-install
+optional-install-docker:
     #!/bin/bash
     if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         echo "Docker is already installed and running: $(docker --version)"
@@ -670,7 +561,7 @@ optional-install-docker: check-optional-install
     fi
 
 # Install AWS VPN Client
-optional-install-awsvpn: check-optional-install
+optional-install-awsvpn:
     #!/bin/bash
     if [ -d "/opt/awsvpnclient" ]; then
         echo "AWS VPN Client is already installed"
@@ -694,7 +585,13 @@ optional-install-awsvpn: check-optional-install
 
 # Install all optional tools if on a personal machine
 optional-installs:
-    @just optional-install-pymol || echo "Skipping PyMol installation"
-    @just optional-install-slack || echo "Skipping Slack installation"
-    @just optional-install-docker || echo "Skipping Docker installation"
-    @just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
+    #!/bin/bash
+    if [ "$(whoami)" = "ubuntu" ]; then
+        echo "Detected EC2/cloud user, skipping all optional installations"
+    else
+        echo "Personal machine detected, installing optional tools..."
+        just optional-install-pymol || echo "Skipping PyMol installation"
+        just optional-install-slack || echo "Skipping Slack installation"
+        just optional-install-docker || echo "Skipping Docker installation"
+        just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
+    fi

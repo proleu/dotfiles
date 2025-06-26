@@ -27,7 +27,6 @@ cat << EOT > "$UV_PATH_SCRIPT"
 #!/bin/bash
 # Add uv installation directories to PATH
 export PATH="\$HOME/.local/bin:\$PATH"
-export PATH="\$HOME/.cargo/bin:\$PATH"
 EOT
 chmod +x "$UV_PATH_SCRIPT"
 
@@ -36,18 +35,17 @@ source "$UV_PATH_SCRIPT"
 
 # Explicitly add to PATH for the current script session
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
 
 # Verify PATH contains our bin directories
-echo "PATH now includes: (grepping for local/bin and cargo/bin)"
-echo "$PATH" | tr ':' '\n' | grep -E 'local/bin|cargo/bin' || echo "⚠️ PATH update may not have succeeded"
+echo "PATH now includes: (grepping for local/bin)"
+echo "$PATH" | tr ':' '\n' | grep -E 'local/bin' || echo "⚠️ PATH update may not have succeeded"
 
 # Verify uv is available
 if ! command -v uv > /dev/null 2>&1; then
     echo "ERROR: uv installation failed or not in PATH. Trying alternative installation..."
     
     # Check if uv exists but isn't in PATH
-    for uv_path in "$HOME/.local/bin/uv" "$HOME/.cargo/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
+    for uv_path in "$HOME/.local/bin/uv" "/usr/local/bin/uv" "/usr/bin/uv"; do
         if [ -f "$uv_path" ]; then
             echo "Found uv at $uv_path, adding to PATH and making executable"
             chmod +x "$uv_path"
@@ -56,12 +54,6 @@ if ! command -v uv > /dev/null 2>&1; then
         fi
     done
     
-    # Try cargo install as a fallback
-    if ! command -v uv > /dev/null 2>&1 && command -v cargo > /dev/null 2>&1; then
-        echo "Installing uv via cargo..."
-        cargo install uv
-        export PATH="$HOME/.cargo/bin:$PATH"
-    fi
     
     # Final fallback: direct download of x86_64 binary
     if ! command -v uv > /dev/null 2>&1; then
@@ -107,7 +99,7 @@ if command -v uv > /dev/null 2>&1; then
     
     # Install additional utilities with error handling
     echo "Installing additional utilities with uv..."
-    for pkg in cruft dive-bin hadolint-bin just-bin lazydocker-bin; do
+    for pkg in cruft dive-bin hadolint-bin lazydocker-bin; do
         echo "Installing $pkg..."
         uv tool install --force $pkg || {
             echo "⚠️ Failed to install $pkg. Continuing with installation."
@@ -116,7 +108,7 @@ if command -v uv > /dev/null 2>&1; then
     
     # Verify the tools were installed
     echo "Verifying tool installation..."
-    for tool in pipx pipenv cruft dive hadolint just lazydocker; do
+    for tool in pipx pipenv cruft dive hadolint lazydocker; do
         if command -v $tool > /dev/null 2>&1; then
             echo "✅ $tool successfully installed: $(which $tool)"
         else
@@ -148,12 +140,6 @@ for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.b
             sed -i '/pyenv init/d' "$rc_file" || true
         fi
         
-        # Add uv to PATH if it doesn't exist
-        if ! grep -q ".cargo/bin" "$rc_file"; then
-            echo '' >> "$rc_file"
-            echo '# uv installation' >> "$rc_file"
-            echo 'export PATH="$HOME/.cargo/bin:$PATH"  # For uv' >> "$rc_file"
-        fi
         
         # Add ~/.local/bin to PATH if it doesn't exist
         if ! grep -q ".local/bin" "$rc_file"; then

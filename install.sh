@@ -55,30 +55,25 @@ fi
 # Install Just if not already installed
 if ! type just &> /dev/null; then
   echo "Installing Just..."
-  # Try using cargo if available
-  if type cargo &> /dev/null; then
-    cargo install just
-  else
-    # Otherwise download the prebuilt binary
-    JUST_VERSION="1.19.0"
-    ARCH=$(uname -m)
-    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-    
-    case "$ARCH" in
-      x86_64) ARCH="x86_64" ;;
-      aarch64) ARCH="aarch64" ;;
-      *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
-    esac
-    
-    JUST_DOWNLOAD_URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${ARCH}-unknown-${OS}-musl.tar.gz"
-    
-    wget -q "$JUST_DOWNLOAD_URL" -O just.tar.gz
-    tar -xzf just.tar.gz just
-    sudo mv just /usr/local/bin/
-    rm just.tar.gz
-    
-    echo "Just installed successfully."
-  fi
+  # Download the prebuilt binary directly
+  JUST_VERSION="1.19.0"
+  ARCH=$(uname -m)
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  
+  case "$ARCH" in
+    x86_64) ARCH="x86_64" ;;
+    aarch64) ARCH="aarch64" ;;
+    *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
+  esac
+  
+  JUST_DOWNLOAD_URL="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${ARCH}-unknown-${OS}-musl.tar.gz"
+  
+  wget -q "$JUST_DOWNLOAD_URL" -O just.tar.gz
+  tar -xzf just.tar.gz just
+  sudo mv just /usr/local/bin/
+  rm just.tar.gz
+  
+  echo "Just installed successfully."
 fi
 
 # Check if user.name and user.email are already set
