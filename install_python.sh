@@ -99,7 +99,7 @@ if command -v uv > /dev/null 2>&1; then
     
     # Install additional utilities with error handling
     echo "Installing additional utilities with uv..."
-    for pkg in cruft dive-bin hadolint-bin just-bin lazydocker-bin; do
+    for pkg in cruft dive-bin hadolint-bin lazydocker-bin; do
         echo "Installing $pkg..."
         uv tool install --force $pkg || {
             echo "⚠️ Failed to install $pkg. Continuing with installation."
@@ -108,7 +108,7 @@ if command -v uv > /dev/null 2>&1; then
     
     # Verify the tools were installed
     echo "Verifying tool installation..."
-    for tool in pipx pipenv cruft dive hadolint just lazydocker; do
+    for tool in pipx pipenv cruft dive hadolint lazydocker; do
         if command -v $tool > /dev/null 2>&1; then
             echo "✅ $tool successfully installed: $(which $tool)"
         else

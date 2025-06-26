@@ -1,5 +1,5 @@
 # Default recipe (run when just is called without arguments)
-default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env link-python-config install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install optional-installs
+default: update-gitconfig update-zshrc install-oh-my-zsh install-plugins setup-rsa install-python-env install-nodejs install-nvim update-nvim install-aws install-vscode link-claude-config restart-shell verify-install optional-installs
 
 # Update Git configuration
 update-gitconfig:
@@ -282,64 +282,6 @@ install-vscode:
         echo "VS Code is already installed."
     fi
 
-# Setup Python environment
-link-python-config:
-    ./setup_python_config.sh
-
-# Show how to activate Python environments
-activate-env:
-    #!/bin/bash
-    DOTFILES_VENV="${HOME}/dotfiles/.venv"
-    
-    if [ -d "$DOTFILES_VENV" ]; then
-        echo "To activate the dotfiles environment:"
-        echo "  venv"
-        echo ""
-        echo "To activate a virtual environment in the current directory:"
-        echo "  venv"
-        echo ""
-        echo "To activate a specific virtual environment:"
-        echo "  venv /path/to/venv"
-        echo ""
-        echo "To deactivate any virtual environment:"
-        echo "  venv off"
-        echo "  or"
-        echo "  deactivate"
-        echo ""
-        echo "For backward compatibility, the old command still works:"
-        echo "  dotenv"
-    else
-        echo "Dotfiles environment not found. Run 'just link-python-config' to create it."
-    fi
-
-# Remove pyenv completely from the system
-remove-pyenv:
-    #!/bin/bash
-    if [ -d "${HOME}/.pyenv" ]; then
-        echo "Removing pyenv installation..."
-        rm -rf "${HOME}/.pyenv"
-    else
-        echo "No pyenv installation found at ${HOME}/.pyenv"
-    fi
-    
-    # Clean up shell configuration files
-    for rc_file in "${HOME}/.zshrc" "${HOME}/.bashrc" "${HOME}/.profile" "${HOME}/.bash_profile"; do
-        if [ -f "$rc_file" ]; then
-            if grep -q "PYENV_ROOT\|pyenv init" "$rc_file"; then
-                echo "Removing pyenv configuration from $rc_file..."
-                cp "$rc_file" "${rc_file}.bak.$(date +%s)"
-                sed -i '/# pyenv configuration/,/fi/d' "$rc_file" || true
-                sed -i '/PYENV_ROOT/d' "$rc_file" || true
-                sed -i '/pyenv init/d' "$rc_file" || true
-                echo "Cleaned pyenv configuration from $rc_file"
-            fi
-        fi
-    done
-    
-    # Remove shims from PATH
-    echo "IMPORTANT: You should restart your shell session to remove pyenv from PATH"
-    echo "To restart your shell, run: exec \$SHELL -l"
-
 # Link Claude config file
 link-claude-config:
     ./setup_claude_config.sh
@@ -427,42 +369,6 @@ verify-install:
         echo "✓ python: $(python3 --version)"
     else
         echo "⚠️ python not installed"
-    fi
-    
-    if command -v pip >/dev/null 2>&1; then
-        echo "✓ pip: $(pip --version)"
-    else
-        echo "⚠️ pip not installed"
-    fi
-    
-    if command -v pipenv >/dev/null 2>&1; then
-        echo "✓ pipenv: $(pipenv --version)"
-    else
-        echo "⚠️ pipenv not installed"
-    fi
-    
-    # Detailed dotfiles venv check
-    echo -e "\n--- Dotfiles venv details ---"
-    if [ -d "${HOME}/dotfiles/.venv" ]; then
-        echo "✓ dotfiles venv exists"
-        echo "  Contents of venv directory:"
-        ls -la "${HOME}/dotfiles/.venv"
-        echo "  Contents of venv/bin:"
-        ls -la "${HOME}/dotfiles/.venv/bin" || echo "  ⚠️ No bin directory found"
-        
-        if [ -f "${HOME}/dotfiles/.venv/bin/python" ]; then
-            echo "  Python version in venv: $(${HOME}/dotfiles/.venv/bin/python --version 2>&1)"
-            echo "  Installed packages:"
-            "${HOME}/dotfiles/.venv/bin/pip" list || echo "  ⚠️ Could not list packages"
-        fi
-    else
-        echo "⚠️ dotfiles venv not found"
-    fi
-    
-    if [ -f "${HOME}/dotfiles/.venv/bin/activate" ]; then
-        echo "✓ dotfiles venv activation script exists"
-    else
-        echo "⚠️ dotfiles venv activation script missing"
     fi
     
     echo -e "\n--- Checking core tooling ---"
