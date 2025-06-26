@@ -447,19 +447,9 @@ verify-install:
 # ===== Optional Installations =====
 # These are only installed on personal machines (non-EC2/non-ubuntu user)
 
-# Check if we should run optional installations
-check-optional-install:
-    #!/bin/bash
-    if [ "$(whoami)" = "ubuntu" ]; then
-        echo "Detected EC2/cloud user, skipping optional installations"
-        exit 1
-    else
-        echo "Personal machine detected, will check for optional installations"
-        exit 0
-    fi
 
 # Install PyMol for molecular visualization
-optional-install-pymol: check-optional-install
+optional-install-pymol:
     #!/bin/bash
     if command -v pymol >/dev/null 2>&1; then
         echo "PyMol is already installed: $(pymol --version 2>&1 | head -n 1 || echo "version unknown")"
@@ -489,7 +479,7 @@ optional-install-pymol: check-optional-install
     fi
 
 # Install Slack
-optional-install-slack: check-optional-install
+optional-install-slack:
     #!/bin/bash
     if command -v slack >/dev/null 2>&1 || [ -d "/usr/lib/slack" ] || [ -d "/opt/slack" ]; then
         echo "Slack is already installed"
@@ -513,7 +503,7 @@ optional-install-slack: check-optional-install
     fi
 
 # Install Docker rootless
-optional-install-docker: check-optional-install
+optional-install-docker:
     #!/bin/bash
     if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         echo "Docker is already installed and running: $(docker --version)"
@@ -571,7 +561,7 @@ optional-install-docker: check-optional-install
     fi
 
 # Install AWS VPN Client
-optional-install-awsvpn: check-optional-install
+optional-install-awsvpn:
     #!/bin/bash
     if [ -d "/opt/awsvpnclient" ]; then
         echo "AWS VPN Client is already installed"
@@ -595,7 +585,13 @@ optional-install-awsvpn: check-optional-install
 
 # Install all optional tools if on a personal machine
 optional-installs:
-    @just optional-install-pymol || echo "Skipping PyMol installation"
-    @just optional-install-slack || echo "Skipping Slack installation"
-    @just optional-install-docker || echo "Skipping Docker installation"
-    @just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
+    #!/bin/bash
+    if [ "$(whoami)" = "ubuntu" ]; then
+        echo "Detected EC2/cloud user, skipping all optional installations"
+    else
+        echo "Personal machine detected, installing optional tools..."
+        just optional-install-pymol || echo "Skipping PyMol installation"
+        just optional-install-slack || echo "Skipping Slack installation"
+        just optional-install-docker || echo "Skipping Docker installation"
+        just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
+    fi
