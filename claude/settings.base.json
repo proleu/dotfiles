@@ -1,0 +1,13 @@
+{
+  "model": "opus[1m]",
+  "effortLevel": "xhigh",
+  "advisorModel": "opus",
+  "attribution": {
+    "commit": ""
+  },
+  "env": {
+    "CAVEMAN_DEFAULT_MODE": "full"
+  },
+  "skipWorkflowUsageWarning": true,
+  "skipAutoPermissionPrompt": true
+}

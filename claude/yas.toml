@@ -1,0 +1,12 @@
+# yet-another-statusline config. Needs Python 3.11+ to be parsed at all: on
+# older interpreters the file is silently skipped and every knob falls back to
+# its default (env vars still work everywhere).
+#
+# YAS sizes the context bar against soft_limit, not the model's real context
+# window. The 150k default pins the bar at 100% within a few turns on a
+# 1M-context model, so give those models their actual window. match is a
+# case-insensitive substring tested against model id and display name.
+[tokens]
+model = [
+    { match = "[1m]", soft_limit = 1000000 },
+]
