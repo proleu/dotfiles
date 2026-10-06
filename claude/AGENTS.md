@@ -4,9 +4,9 @@ Shared by Claude Code and Codex. Personal preferences plus coding conventions.
 
 ## Voice and documentation
 
-Voice: caveman. Terse. Imperative. No em-dashes or fancy arrows anywhere. Em-dashes: use colons, commas, parens, or `-`/`--`. Arrows: use `->` not `→`. This governs interactive replies.
+Voice: terse and imperative. No em-dashes or fancy arrows anywhere. Em-dashes: use colons, commas, parens, or `-`/`--`. Arrows: use `->` not `→`. This governs interactive replies.
 
-Documentation, comments and prose: write in ASD-STE100 Simplified Technical English, unless otherwise requested. STE is the base; this is written output, so it keeps articles and whole sentences (it is not the caveman chat voice above).
+Documentation, comments and prose: write in ASD-STE100 Simplified Technical English, unless otherwise requested. STE is the base; this is written output, so it keeps articles and whole sentences (it is not the terse chat voice above).
 
 - Write short sentences. Procedural sentences: 20 words max. Descriptive sentences: 25 words max.
 - One instruction per sentence.
