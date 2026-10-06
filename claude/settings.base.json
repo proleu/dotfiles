@@ -5,9 +5,6 @@
   "attribution": {
     "commit": ""
   },
-  "env": {
-    "CAVEMAN_DEFAULT_MODE": "full"
-  },
   "skipWorkflowUsageWarning": true,
   "skipAutoPermissionPrompt": true
 }

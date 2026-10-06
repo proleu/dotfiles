@@ -52,19 +52,14 @@ for skill in "${REPO_DIR}"/claude/skills/*/; do
 done
 
 step "Plugins"
-# caveman: compressed replies. yas: the statusline. The yas installer also
-# provisions its Python, wires its prompt hook, and points statusLine at its own
-# versioned path, so it has to run before the statusLine wiring below.
-[ -d "${CLAUDE_DIR}/plugins/cache/caveman" ] || {
-    claude plugin marketplace add JuliusBrussee/caveman
-    claude plugin install caveman@caveman
-}
+# yas: the statusline. Its installer provisions its Python, wires its prompt hook,
+# and points statusLine at its own versioned path, so it runs before the statusLine
+# wiring below.
 [ -d "${CLAUDE_DIR}/plugins/cache/yet-another-statusline" ] || curl -fsSL "$YAS_INSTALLER" | YAS_NO_TTY=1 bash
 
 step "Statusline"
-# One statusLine command, two things to show: the wrapper prints the caveman
-# mode badge, then hands stdin to yas. It resolves both plugin paths at runtime,
-# so version bumps do not break it.
+# The wrapper hands stdin to yas, resolving its plugin path at runtime so version
+# bumps do not break it.
 link "${REPO_DIR}/claude/statusline.sh" "${CLAUDE_DIR}/statusline.sh"
 link "${REPO_DIR}/claude/yas.toml" "${CLAUDE_DIR}/yas.toml"
 
