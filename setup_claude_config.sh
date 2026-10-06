@@ -40,10 +40,11 @@ else
 fi
 
 step "Instructions"
-link "${REPO_DIR}/CLAUDE.md" "${CLAUDE_DIR}/claude.md"      # coding guide
-link "${REPO_DIR}/claude/AGENTS.md" "$AGENTS_MD"            # preferences, shared with Codex
-printf '@%s\n' "$AGENTS_MD" > "${CLAUDE_DIR}/CLAUDE.md"     # Claude Code imports them
-info "${CLAUDE_DIR}/CLAUDE.md imports $AGENTS_MD"
+# Latest Claude Code reads AGENTS.md natively, so there is no CLAUDE.md shim.
+link "${REPO_DIR}/claude/AGENTS.md" "$AGENTS_MD"               # shared with Codex
+link "${REPO_DIR}/claude/AGENTS.md" "${CLAUDE_DIR}/AGENTS.md"  # read natively by Claude Code
+# Drop the legacy files from the old CLAUDE.md-based setup (both were generated here, never hand-authored).
+rm -f "${CLAUDE_DIR}/CLAUDE.md" "${CLAUDE_DIR}/claude.md"
 
 step "Skills"
 for skill in "${REPO_DIR}"/claude/skills/*/; do

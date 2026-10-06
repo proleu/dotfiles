@@ -435,10 +435,10 @@ verify-install:
         echo "⚠️ Neovim config not found"
     fi
     
-    if [ -f "${HOME}/.claude/claude.md" ]; then
-        echo "✓ Claude.md linked"
+    if [ -f "${HOME}/.claude/AGENTS.md" ]; then
+        echo "✓ AGENTS.md linked"
     else
-        echo "⚠️ Claude.md not linked"
+        echo "⚠️ AGENTS.md not linked"
     fi
     
     echo -e "\n=== Verification complete ===\n"
