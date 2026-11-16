@@ -40,11 +40,14 @@ else
 fi
 
 step "Instructions"
-# Latest Claude Code reads AGENTS.md natively, so there is no CLAUDE.md shim.
-link "${REPO_DIR}/claude/AGENTS.md" "$AGENTS_MD"               # shared with Codex
-link "${REPO_DIR}/claude/AGENTS.md" "${CLAUDE_DIR}/AGENTS.md"  # read natively by Claude Code
-# Drop the legacy files from the old CLAUDE.md-based setup (both were generated here, never hand-authored).
-rm -f "${CLAUDE_DIR}/CLAUDE.md" "${CLAUDE_DIR}/claude.md"
+# Native AGENTS.md (Claude Code v2.1.277+) is project-scoped: it loads AGENTS.md from the working
+# directory and above, never from ~/.claude. The user-scope read path is ~/.claude/CLAUDE.md, so
+# point it at the shared prefs with an import. See https://code.claude.com/docs/en/memory.
+link "${REPO_DIR}/claude/AGENTS.md" "$AGENTS_MD"            # shared with Codex
+printf '@%s\n' "$AGENTS_MD" > "${CLAUDE_DIR}/CLAUDE.md"     # user-scope import of the shared prefs
+info "${CLAUDE_DIR}/CLAUDE.md imports $AGENTS_MD"
+# Drop paths Claude Code does not read: a stray ~/.claude/AGENTS.md and the legacy lowercase symlink.
+rm -f "${CLAUDE_DIR}/AGENTS.md" "${CLAUDE_DIR}/claude.md"
 
 step "Skills"
 for skill in "${REPO_DIR}"/claude/skills/*/; do
