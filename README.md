@@ -16,6 +16,7 @@ Run `just --list` to see all available commands. Here are the main ones:
 - `just update-gitconfig`: Configure git settings
 - `just install-nvim`: Install Neovim editor
 - `just install-pyenv`: Install Python environment
+- `just setup-pkb`: Set up the Obsidian vault as a git repository (`PKB_DIR`, `PKB_REMOTE`)
 
 ## Manual Installation
 

@@ -583,6 +583,20 @@ optional-install-awsvpn:
         fi
     fi
 
+# Install Obsidian (optional)
+optional-install-obsidian:
+    #!/bin/bash
+    if command -v obsidian >/dev/null 2>&1; then
+        echo "Obsidian is already installed"
+    else
+        echo "Installing Obsidian..."
+        sudo snap install obsidian --classic
+    fi
+
+# Set up the personal knowledge base vault (PKB_DIR, PKB_REMOTE)
+setup-pkb:
+    ./setup_pkb.sh
+
 # Install all optional tools if on a personal machine
 optional-installs:
     #!/bin/bash
@@ -594,4 +608,6 @@ optional-installs:
         just optional-install-slack || echo "Skipping Slack installation"
         just optional-install-docker || echo "Skipping Docker installation"
         just optional-install-awsvpn || echo "Skipping AWS VPN Client installation"
+        just optional-install-obsidian || echo "Skipping Obsidian installation"
+        just setup-pkb || echo "Skipping knowledge base setup"
     fi
