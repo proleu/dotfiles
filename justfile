@@ -8,6 +8,7 @@ update-gitconfig:
     git config --global push.default "current"
     git config --global push.autoSetupRemote "true"
     git config --global pull.rebase "false"
+    git config --global pull.ff "only"
     git config --global alias.ac "!git add -A && git commit -a"
     git config --global alias.mainlog "log --graph --first-parent"
     git config --global alias.set-upstream "!git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`"
